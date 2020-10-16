@@ -13,12 +13,11 @@ kotlin {
             kotlinOptions.jvmTarget = "12"
         }
     }
+
     js {
         browser {
             testTask {
-                useKarma {
-                    useChromeHeadless()
-                    webpackConfig.cssSupport.enabled = true
+                useMocha {
                 }
             }
         }
@@ -37,7 +36,11 @@ kotlin {
                 implementation(kotlin("test-junit"))
             }
         }
-        val jsMain by getting
+        val jsMain by getting {
+            dependencies {
+                implementation(npm("uuid", "8.3.1"))
+            }
+        }
         val jsTest by getting {
             dependencies {
                 implementation(kotlin("test-js"))
