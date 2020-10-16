@@ -2,6 +2,7 @@ package nl.rjcoding.common
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class UUIDTests {
@@ -18,5 +19,6 @@ class UUIDTests {
     fun fromStringTest() {
         val input = "6ec0bd7f-11c0-43da-975e-2a8ad9ebae0b"
         assertEquals(input, UUID.fromString(input).toString())
+        assertNull(UUID.fromString("Foo"))
     }
 }

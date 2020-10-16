@@ -17,8 +17,13 @@ kotlin {
     js {
         browser {
             testTask {
-                useMocha {
-                }
+                useMocha()
+            }
+        }
+
+        nodejs {
+            testTask {
+                useMocha()
             }
         }
     }
