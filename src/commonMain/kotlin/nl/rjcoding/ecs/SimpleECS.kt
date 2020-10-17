@@ -1,4 +1,4 @@
-package nl.rjcoding.crecs
+package nl.rjcoding.ecs
 
 import nl.rjcoding.common.UUID
 
@@ -16,7 +16,7 @@ class SimpleECS<ComponentType> : ECS<UUID, ComponentType> {
         return components.containsKey(id)
     }
 
-    private fun requireIdExists(id: UUID) {
+    private fun requireExists(id: UUID) {
         require(exists(id)) { "Entity $id does not exist" }
     }
 
@@ -25,22 +25,27 @@ class SimpleECS<ComponentType> : ECS<UUID, ComponentType> {
     }
 
     override fun set(id: UUID, component: Component<ComponentType>) {
-        requireIdExists(id)
+        requireExists(id)
         components[id]!![component.type] = component
     }
 
+    override fun has(id: UUID, type: ComponentType): Boolean {
+        requireExists(id)
+        return components[id]!!.containsKey(type)
+    }
+
     override fun get(id: UUID, type: ComponentType): Component<ComponentType>? {
-        requireIdExists(id)
+        requireExists(id)
         return components[id]!![type]
     }
 
     override fun getAll(id: UUID): Set<Component<ComponentType>> {
-        requireIdExists(id)
+        requireExists(id)
         return components[id]!!.entries.map { it.value }.toSet()
     }
 
     override fun unset(id: UUID, type: ComponentType): Boolean {
-        requireIdExists(id)
+        requireExists(id)
         return components[id]!!.remove(type) != null
     }
 
