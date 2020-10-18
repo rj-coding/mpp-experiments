@@ -1,10 +1,9 @@
 package nl.rjcoding.ecs
 
 import nl.rjcoding.common.UUID
-import kotlin.random.Random
 
 class SimpleECSTests : ECSTests<UUID>() {
-    override fun createECS(): ECS<UUID, TestComponentType> {
+    override fun createECS(): ECS<UUID, TypeTag> {
         return SimpleECS()
     }
 

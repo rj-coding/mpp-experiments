@@ -1,19 +1,19 @@
 package nl.rjcoding.ecs
 
-interface Component<ComponentType> {
-    val type: ComponentType
+interface Component<TypeTag> {
+    val type: TypeTag
 }
 
-interface ECS<Id, ComponentType> {
+interface ECS<Id, TypeTag> {
     fun create(id: Id? = null): Id
     fun exists(id: Id): Boolean
     fun destroy(id: Id): Boolean
 
-    fun set(id: Id, component: Component<ComponentType>)
-    fun has(id: Id, type: ComponentType): Boolean
-    fun get(id: Id, type: ComponentType): Component<ComponentType>?
-    fun getAll(id: Id): Set<Component<ComponentType>>
-    fun unset(id: Id, type: ComponentType): Boolean
+    fun set(id: Id, component: Component<TypeTag>)
+    fun has(id: Id, type: TypeTag): Boolean
+    fun get(id: Id, type: TypeTag): Component<TypeTag>?
+    fun getAll(id: Id): Set<Component<TypeTag>>
+    fun unset(id: Id, type: TypeTag): Boolean
 
     fun entities(): Sequence<Id>
 }

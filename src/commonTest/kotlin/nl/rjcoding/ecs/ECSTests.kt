@@ -5,18 +5,18 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-enum class TestComponentType {
+enum class TypeTag {
     Age,
     Name
 }
 
-abstract class TestComponent(override val type: TestComponentType): Component<TestComponentType>
+abstract class TestComponent(override val type: TypeTag): Component<TypeTag>
 
-data class Age(val value: Int): TestComponent(TestComponentType.Age)
-data class Name(val value: String): TestComponent(TestComponentType.Name)
+data class Age(val value: Int): TestComponent(TypeTag.Age)
+data class Name(val value: String): TestComponent(TypeTag.Name)
 
 abstract class ECSTests<Id> {
-    abstract fun createECS(): ECS<Id, TestComponentType>
+    abstract fun createECS(): ECS<Id, TypeTag>
     abstract fun generateId(): Id
 
     @Test
@@ -58,8 +58,8 @@ abstract class ECSTests<Id> {
         val id = ecs.create()
 
         ecs.set(id, Age(42))
-        assertTrue { ecs.has(id, TestComponentType.Age) }
-        assertFalse { ecs.has(id, TestComponentType.Name) }
+        assertTrue { ecs.has(id, TypeTag.Age) }
+        assertFalse { ecs.has(id, TypeTag.Name) }
     }
 
     @Test
@@ -68,11 +68,11 @@ abstract class ECSTests<Id> {
         val id = ecs.create()
 
         ecs.set(id, Age(42))
-        var retrieved : Age? = ecs.get(id, TestComponentType.Age).into()
+        var retrieved : Age? = ecs.get(id, TypeTag.Age).into()
         assertEquals(Age(42), retrieved)
 
         ecs.set(id, Age(43))
-        retrieved = ecs.get(id, TestComponentType.Age).into()
+        retrieved = ecs.get(id, TypeTag.Age).into()
         assertEquals(Age(43), retrieved)
     }
 
@@ -82,8 +82,8 @@ abstract class ECSTests<Id> {
         val id = ecs.create()
 
         ecs.set(id, Age(42))
-        ecs.unset(id, TestComponentType.Age)
-        assertFalse { ecs.has(id, TestComponentType.Age) }
+        ecs.unset(id, TypeTag.Age)
+        assertFalse { ecs.has(id, TypeTag.Age) }
     }
 
     @Test
