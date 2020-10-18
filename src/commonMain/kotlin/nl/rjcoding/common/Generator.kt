@@ -1,5 +1,5 @@
 package nl.rjcoding.common
 
-interface Generator<T> {
+fun interface Generator<T> {
     fun generate(): T
 }

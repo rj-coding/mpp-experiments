@@ -1,12 +1,22 @@
 package nl.rjcoding.ecs
 
 import nl.rjcoding.common.Generator
+import nl.rjcoding.common.ReadBus
+import nl.rjcoding.common.WriteBus
 
 class CRECS<Id, TypeTag, Timestamp : Comparable<Timestamp>>(
     private val idGenerator: Generator<Id>,
     private val timeStampGenerator: Generator<Timestamp>,
-    private val backend: ECS<Id, TypeTag>
+    private val backend: ECS<Id, TypeTag>,
+    private val readBus: ReadBus<Event<Id, TypeTag, Timestamp>>? = null,
+    private val writeBus: WriteBus<Event<Id, TypeTag, Timestamp>>? = null
 ): ECS<Id, TypeTag> {
+
+    init {
+        readBus?.subscribe { event ->
+            invokeEvent(event)
+        }
+    }
 
     private val entityTombstones = mutableSetOf<Id>()
     private val componentStash = mutableMapOf<Id, MutableList<Event<Id, TypeTag, Timestamp>>>()
@@ -32,8 +42,9 @@ class CRECS<Id, TypeTag, Timestamp : Comparable<Timestamp>>(
     override fun destroy(id: Id): Boolean {
         val timestamp = timeStampGenerator.generate()
         val event : Event<Id, TypeTag, Timestamp> = Event.Destroy(timestamp, id)
+        val returnValue = backend.exists(id)
         applyEvent(event)
-        return true
+        return returnValue
     }
 
     override fun set(id: Id, component: Component<TypeTag>) {
@@ -45,8 +56,9 @@ class CRECS<Id, TypeTag, Timestamp : Comparable<Timestamp>>(
     override fun unset(id: Id, type: TypeTag): Boolean {
         val timestamp = timeStampGenerator.generate()
         val event : Event<Id, TypeTag, Timestamp> = Event.UnSet(timestamp, id, type)
+        val returnValue = backend.has(id, type)
         applyEvent(event)
-        return true
+        return returnValue
     }
 
     override fun exists(id: Id): Boolean = backend.exists(id)
@@ -56,6 +68,11 @@ class CRECS<Id, TypeTag, Timestamp : Comparable<Timestamp>>(
     override fun getAll(id: Id): Set<Component<TypeTag>> = backend.getAll(id)
 
     private fun applyEvent(event: Event<Id, TypeTag, Timestamp>) {
+        invokeEvent(event)
+        writeBus?.write(event)
+    }
+
+    private fun invokeEvent(event: Event<Id, TypeTag, Timestamp>) {
         when (event) {
             is Event.Create -> {
                 if (entityTombstones.contains(event.id)) return

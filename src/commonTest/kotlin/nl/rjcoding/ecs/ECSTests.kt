@@ -1,5 +1,6 @@
 package nl.rjcoding.ecs
 
+import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -7,17 +8,21 @@ import kotlin.test.assertTrue
 
 enum class TypeTag {
     Age,
-    Name
+    Name,
+    Color
 }
 
 abstract class TestComponent(override val type: TypeTag): Component<TypeTag>
 
 data class Age(val value: Int): TestComponent(TypeTag.Age)
 data class Name(val value: String): TestComponent(TypeTag.Name)
+data class Color(val value: Int): TestComponent(TypeTag.Color)
 
 abstract class ECSTests<Id> {
     abstract fun createECS(): ECS<Id, TypeTag>
     abstract fun generateId(): Id
+
+    private val charPool : List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
 
     @Test
     fun createTest() {
@@ -108,5 +113,54 @@ abstract class ECSTests<Id> {
 
         val entities = ecs.entities().distinct().toList()
         assertEquals(100, entities.size)
+    }
+
+    fun compare(first: ECS<Id, TypeTag>, second: ECS<Id, TypeTag>) {
+        val entitiesFirst = first.entities().toSet()
+        val entitiesSecond = second.entities().toSet()
+        assertEquals(entitiesFirst, entitiesSecond)
+
+        entitiesFirst.forEach { id ->
+            val componentsFirst = first.getAll(id)
+            val componentsSecond = second.getAll(id)
+            assertEquals(componentsFirst, componentsSecond)
+        }
+    }
+
+    fun fillRandom(ecs: ECS<Id, TypeTag>, entities: Int, components: Int) {
+        (0 until entities).forEach { _ ->
+            val id = ecs.create()
+            (0 until components).forEach { _ ->
+                randomComponent()?.also { component ->
+                    ecs.set(id, component)
+                }
+
+                if (Random.nextFloat() < 0.2) {
+                    randomComponent()?.also { component ->
+                        ecs.unset(id, component.type)
+                    }
+                }
+            }
+
+            if (Random.nextFloat() < 0.2) {
+                ecs.destroy(id)
+            }
+        }
+    }
+
+    private fun randomComponent(): TestComponent? {
+        return when (Random.nextInt(3)) {
+            0 -> {
+                val name = (1..10)
+                    .map { i -> Random.nextInt(0, charPool.size) }
+                    .map(charPool::get)
+                    .joinToString("")
+                Name(name)
+            }
+
+            1 -> Age(Random.nextInt(100))
+            2 -> Color(Random.nextInt())
+            else -> null
+        }
     }
 }
