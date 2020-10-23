@@ -1,29 +1,12 @@
 package nl.rjcoding.orgchart
 
-import nl.rjcoding.common.UUID
 import nl.rjcoding.ecs.Component
 import nl.rjcoding.ecs.ECS
 import nl.rjcoding.ecs.into
 
-class OrgChartSystem(val ecs: ECS<UUID, TypeTag>) {
+class OrgChartModule<Id>(val ecs: ECS<Id, TypeTag>) {
 
-    enum class TypeTag {
-        Name,
-        Parent,
-        Assistant,
-        Department,
-        Function
-    }
-
-    sealed class OrgChartComponent(override val type: TypeTag) : Component<TypeTag> {
-        data class Name(val name: String) : OrgChartComponent(TypeTag.Name)
-        data class Parent(val id: UUID) : OrgChartComponent(TypeTag.Parent)
-        object Assistant : OrgChartComponent(TypeTag.Assistant)
-        object Department : OrgChartComponent(TypeTag.Department)
-        object Function : OrgChartComponent(TypeTag.Function)
-    }
-
-    fun createDepartment(name: String, parent: UUID? = null, isAssistant: Boolean = false): UUID = ecs.create().also { id ->
+    fun createDepartment(name: String, parent: Id? = null, isAssistant: Boolean = false): Id = ecs.create().also { id ->
         ecs.set(id, OrgChartComponent.Department)
         setName(id, name)
         if (parent != null && ecs.exists(parent)) {
@@ -32,7 +15,7 @@ class OrgChartSystem(val ecs: ECS<UUID, TypeTag>) {
         }
     }
 
-    fun createFunction(name: String, parent: UUID): UUID? {
+    fun createFunction(name: String, parent: Id): Id? {
         if (ecs.exists(parent)) {
             return ecs.create().also { id ->
                 ecs.set(id, OrgChartComponent.Function)
@@ -43,12 +26,12 @@ class OrgChartSystem(val ecs: ECS<UUID, TypeTag>) {
         return null
     }
 
-    fun setName(id: UUID, name: String) {
+    fun setName(id: Id, name: String) {
         if (!ecs.exists(id)) return
         ecs.set(id, OrgChartComponent.Name(name))
     }
 
-    fun setParent(id: UUID, parent: UUID?) {
+    fun setParent(id: Id, parent: Id?) {
         if (!ecs.exists(id)) return
 
         if (parent == null && ecs.has(id, TypeTag.Department)) {
@@ -58,7 +41,7 @@ class OrgChartSystem(val ecs: ECS<UUID, TypeTag>) {
         }
     }
 
-    fun setAssistant(id: UUID, isAssistant: Boolean) {
+    fun setAssistant(id: Id, isAssistant: Boolean) {
         if (!ecs.exists(id)) return
 
         if (isAssistant) {
@@ -71,7 +54,7 @@ class OrgChartSystem(val ecs: ECS<UUID, TypeTag>) {
         }
     }
 
-    fun destroy(id: UUID) {
+    fun destroy(id: Id) {
         if (!ecs.exists(id)) return
 
         childrenOf(id).forEach { childId ->
@@ -80,11 +63,11 @@ class OrgChartSystem(val ecs: ECS<UUID, TypeTag>) {
         ecs.destroy(id)
     }
 
-    fun childrenOf(id: UUID): Set<UUID> {
+    fun childrenOf(id: Id): Set<Id> {
         if (!ecs.exists(id)) return setOf()
 
         return ecs.entities().filter { childId ->
-            ecs.get(childId, TypeTag.Parent).into<OrgChartComponent.Parent>()?.id == id
+            ecs.get(childId, TypeTag.Parent).into<OrgChartComponent.Parent<Id>>()?.id == id
         }.toSet()
     }
 }
