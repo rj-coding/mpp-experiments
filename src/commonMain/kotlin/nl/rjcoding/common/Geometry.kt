@@ -21,6 +21,10 @@ object Integral {
         }
     }
 
+    interface HasArea {
+        val area: Area
+    }
+
     data class Rectangle(val origin: Vector2D, val area: Area) {
         constructor(x: Int, y: Int, width: Int, height: Int) : this(Vector2D(x, y), Area(width, height))
 
