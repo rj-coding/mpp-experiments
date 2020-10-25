@@ -1,14 +1,27 @@
 package nl.rjcoding.orgchart
 
+import nl.rjcoding.orgchart.OrgChartComponent.Position
+import nl.rjcoding.orgchart.OrgChartComponent.Children
 import nl.rjcoding.ecs.ECS
-import nl.rjcoding.orgchart.OrgChartUtils.getHierarchyMap
+import nl.rjcoding.ecs.into
+import nl.rjcoding.orgchart.util.AreaTree
 
-object OrgChartPositionSystem {
+class OrgChartPositionSystem<Id>(val ecs: ECS<Id, TypeTag>) {
 
-    fun <Id> position(ecs: ECS<Id, TypeTag>) {
-        val hierarchy = getHierarchyMap(ecs)
-        val roots = hierarchy.filter { it.value.parent == 0 }
+    fun position() {
+        val roots = ecs.entities().filter { id ->
+            ecs.has(id, TypeTag.Department) && !ecs.has(id, TypeTag.Parent)
+        }.toList()
 
-        
+        positionEntities(roots)
+    }
+
+    private fun positionEntities(entities: List<Id>): List<AreaTree<Id>> {
+        return entities.map { entity -> positionEntity(entity) }
+    }
+
+    private fun positionEntity(entity: Id): AreaTree<Id> {
+        val tree = AreaTree(entity)
+        return tree
     }
 }

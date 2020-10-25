@@ -1,6 +1,5 @@
 package nl.rjcoding.orgchart
 
-import nl.rjcoding.ecs.Component
 import nl.rjcoding.ecs.ECS
 import nl.rjcoding.ecs.into
 
@@ -37,7 +36,19 @@ class OrgChartModule<Id>(val ecs: ECS<Id, TypeTag>) {
         if (parent == null && ecs.has(id, TypeTag.Department)) {
             ecs.unset(id, TypeTag.Parent)
         } else if (ecs.exists(parent!!)) {
+            ecs.get(id, TypeTag.Parent).into<OrgChartComponent.Parent<Id>>()?.also { oldParent ->
+                ecs.get(oldParent.id, TypeTag.Children).into<OrgChartComponent.Children<Id>>()?.also { oldChildren ->
+                    ecs.set(oldParent.id, OrgChartComponent.Children(oldChildren.children - id))
+                }
+            }
+
             ecs.set(id, OrgChartComponent.Parent(parent))
+
+            if (!ecs.has(parent, TypeTag.Children)) {
+                ecs.set(parent, OrgChartComponent.Children(listOf<Id>(id)))
+            } else {
+                ecs.set(parent, OrgChartComponent.Children(ecs.get(parent, TypeTag.Children).into<OrgChartComponent.Children<Id>>()!!.children + id))
+            }
         }
     }
 
