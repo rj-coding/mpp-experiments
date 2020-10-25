@@ -4,7 +4,7 @@ import nl.rjcoding.common.Integral
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class AreaTreeTest {
+class AreaTreeTests {
 
     @Test
     fun appendToRowTest() {
@@ -17,12 +17,17 @@ class AreaTreeTest {
 
         assertEquals(Integral.Area(3, 1), root.area)
         assertEquals(2, root.children.toList().size)
-        
+
         root.children.forEach { (position, tree) ->
             when (tree.item) {
                 "A" -> assertEquals(Integral.Vector2D(1, 0), position)
                 "B" -> assertEquals(Integral.Vector2D(2, 0), position)
             }
         }
+    }
+
+    @Test
+    fun appendToColumnTest() {
+
     }
 }
