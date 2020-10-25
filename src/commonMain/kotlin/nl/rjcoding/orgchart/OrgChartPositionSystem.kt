@@ -13,15 +13,15 @@ class OrgChartPositionSystem<Id>(val ecs: ECS<Id, TypeTag>) {
             ecs.has(id, TypeTag.Department) && !ecs.has(id, TypeTag.Parent)
         }.toList()
 
-        positionEntities(roots)
+        //positionEntities(roots)
     }
 
-    private fun positionEntities(entities: List<Id>): List<AreaTree<Id>> {
+    /*private fun positionEntities(entities: List<Id>): List<AreaTree<Id>> {
         return entities.map { entity -> positionEntity(entity) }
     }
 
     private fun positionEntity(entity: Id): AreaTree<Id> {
         val tree = AreaTree(entity)
         return tree
-    }
+    }*/
 }
