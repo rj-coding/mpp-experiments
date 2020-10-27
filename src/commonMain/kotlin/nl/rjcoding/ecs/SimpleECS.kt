@@ -2,9 +2,9 @@ package nl.rjcoding.ecs
 
 import nl.rjcoding.common.UUID
 
-class SimpleECS<ComponentType> : ECS<UUID, ComponentType> {
+class SimpleECS<TypeTag> : ECS<UUID, TypeTag> {
 
-    private val components = mutableMapOf<UUID, MutableMap<ComponentType, Component<ComponentType>>>()
+    private val components = mutableMapOf<UUID, MutableMap<TypeTag, Component<TypeTag>>>()
 
     override fun create(id: UUID?): UUID {
         return (id ?: UUID.random()).also {uuid ->
@@ -24,27 +24,27 @@ class SimpleECS<ComponentType> : ECS<UUID, ComponentType> {
         return components.remove(id) != null
     }
 
-    override fun set(id: UUID, component: Component<ComponentType>) {
+    override fun set(id: UUID, component: Component<TypeTag>) {
         requireExists(id)
         components[id]!![component.type] = component
     }
 
-    override fun has(id: UUID, type: ComponentType): Boolean {
+    override fun has(id: UUID, type: TypeTag): Boolean {
         requireExists(id)
         return components[id]!!.containsKey(type)
     }
 
-    override fun get(id: UUID, type: ComponentType): Component<ComponentType>? {
+    override fun get(id: UUID, type: TypeTag): Component<TypeTag>? {
         requireExists(id)
         return components[id]!![type]
     }
 
-    override fun getAll(id: UUID): Set<Component<ComponentType>> {
+    override fun getAll(id: UUID): Components<TypeTag> {
         requireExists(id)
-        return components[id]!!.entries.map { it.value }.toSet()
+        return components[id]!!
     }
 
-    override fun unset(id: UUID, type: ComponentType): Boolean {
+    override fun unset(id: UUID, type: TypeTag): Boolean {
         requireExists(id)
         return components[id]!!.remove(type) != null
     }

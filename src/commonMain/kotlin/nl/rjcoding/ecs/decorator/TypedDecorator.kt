@@ -12,8 +12,8 @@ inline fun <reified T : Any> T.asTypedComponent(): Component<KClass<out Any>> {
     return TypedComponent(component, type)
 }
 
-fun <Id> ECS<Id, KClass<out Any>>.getAllTyped(id: Id): Set<Any> {
-    return this.getAll(id).map { (it as TypedComponent<*>).component }.toSet()
+fun <Id> ECS<Id, KClass<out Any>>.getAllTyped(id: Id): Map<KClass<out Any>, Any> {
+    return this.getAll(id).map { it.key to (it.value as TypedComponent<*>).component }.toMap()
 }
 
 class TypedDecorator<Id>(

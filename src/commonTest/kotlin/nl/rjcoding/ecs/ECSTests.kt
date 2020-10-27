@@ -100,8 +100,8 @@ abstract class ECSTests<Id> {
 
         val components = ecs.getAll(id)
         assertEquals(2, components.size)
-        assertTrue { components.contains(Age(42)) }
-        assertTrue { components.contains(Name("Foo")) }
+        assertTrue { components.containsValue(Age(42)) }
+        assertTrue { components.containsValue(Name("Foo")) }
     }
 
     @Test

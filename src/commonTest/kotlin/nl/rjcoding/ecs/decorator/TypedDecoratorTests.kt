@@ -43,7 +43,7 @@ class TypedDecoratorTests {
 
         val components = ecs.getAllTyped(id)
         assertEquals(2, components.size)
-        assertTrue { components.contains(name) }
-        assertTrue { components.contains(age) }
+        assertTrue { components.containsValue(name) }
+        assertTrue { components.containsValue(age) }
     }
 }

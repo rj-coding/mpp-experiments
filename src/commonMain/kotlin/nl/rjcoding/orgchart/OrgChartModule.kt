@@ -57,7 +57,7 @@ class OrgChartModule<Id>(val ecs: ECS<Id, TypeTag>) {
 
         if (isAssistant) {
             val components = ecs.getAll(id)
-            if (components.contains(OrgChartComponent.Department) && components.any { it.type == TypeTag.Parent }) {
+            if (components.containsKey(TypeTag.Department) && components.containsKey(TypeTag.Parent)) {
                 ecs.set(id, OrgChartComponent.Assistant)
             }
         } else {
