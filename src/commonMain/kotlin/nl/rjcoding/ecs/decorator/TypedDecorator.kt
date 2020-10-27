@@ -1,4 +1,4 @@
-package nl.rjcoding.ecs.facade
+package nl.rjcoding.ecs.decorator
 
 import nl.rjcoding.ecs.Component
 import nl.rjcoding.ecs.ECS
@@ -16,9 +16,9 @@ fun <Id> ECS<Id, KClass<out Any>>.getAllTyped(id: Id): Set<Any> {
     return this.getAll(id).map { (it as TypedComponent<*>).component }.toSet()
 }
 
-class TypedFacade<Id>(
+class TypedDecorator<Id>(
     backend: ECS<Id, KClass<out Any>>
-) : AbstractECSFacade<Id, KClass<out Any>>(backend) {
+) : AbstractECSDecorator<Id, KClass<out Any>>(backend) {
 
     inline fun <reified T : Any> set(id: Id, component: T) {
         val typed = component.asTypedComponent()

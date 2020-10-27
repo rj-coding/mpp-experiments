@@ -1,4 +1,4 @@
-package nl.rjcoding.ecs.facade
+package nl.rjcoding.ecs.decorator
 
 import nl.rjcoding.common.Generator
 import nl.rjcoding.common.ReadBus
@@ -6,13 +6,13 @@ import nl.rjcoding.common.WriteBus
 import nl.rjcoding.ecs.Component
 import nl.rjcoding.ecs.ECS
 
-class CRDTFacade<Id, TypeTag, Timestamp : Comparable<Timestamp>>(
+class CRDTDecorator<Id, TypeTag, Timestamp : Comparable<Timestamp>>(
     private val idGenerator: Generator<Id>,
     private val timeStampGenerator: Generator<Timestamp>,
     backend: ECS<Id, TypeTag>,
     private val readBus: ReadBus<Event<Id, TypeTag, Timestamp>>? = null,
     private val writeBus: WriteBus<Event<Id, TypeTag, Timestamp>>? = null
-): AbstractECSFacade<Id, TypeTag>(backend) {
+): AbstractECSDecorator<Id, TypeTag>(backend) {
 
     init {
         readBus?.subscribe { event ->

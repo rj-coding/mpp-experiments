@@ -1,4 +1,4 @@
-package nl.rjcoding.ecs.facade
+package nl.rjcoding.ecs.decorator
 
 import nl.rjcoding.common.Generator
 import nl.rjcoding.common.InMemoryBus
@@ -9,7 +9,7 @@ import nl.rjcoding.ecs.SimpleECS
 import nl.rjcoding.ecs.TypeTag
 import kotlin.test.Test
 
-class CDRDTFacadeTests : ECSTests<UUID>() {
+class CRDTDecoratorTests : ECSTests<UUID>() {
 
     val idGenerator = Generator {
         UUID.random()
@@ -23,7 +23,7 @@ class CDRDTFacadeTests : ECSTests<UUID>() {
     }
 
     override fun createECS(): ECS<UUID, TypeTag> {
-        return CRDTFacade(
+        return CRDTDecorator(
             idGenerator,
             timestampGenerator,
             SimpleECS()
@@ -37,18 +37,18 @@ class CDRDTFacadeTests : ECSTests<UUID>() {
     @Test
     fun replayTest() {
         val backend = SimpleECS<TypeTag>()
-        val bus = InMemoryBus<CRDTFacade.Event<UUID, TypeTag, Long>>()
-        val ecs = CRDTFacade(idGenerator, timestampGenerator, backend, writeBus = bus)
+        val bus = InMemoryBus<CRDTDecorator.Event<UUID, TypeTag, Long>>()
+        val ecs = CRDTDecorator(idGenerator, timestampGenerator, backend, writeBus = bus)
 
-        val events = mutableListOf<CRDTFacade.Event<UUID, TypeTag, Long>>()
+        val events = mutableListOf<CRDTDecorator.Event<UUID, TypeTag, Long>>()
         bus.subscribe {
             events.add(it)
         }
         fillRandom(ecs, 10, 100)
 
         val replayBackend = SimpleECS<TypeTag>()
-        val replayBus = InMemoryBus<CRDTFacade.Event<UUID, TypeTag, Long>>()
-        val replayEcs = CRDTFacade(idGenerator, timestampGenerator, replayBackend, readBus = replayBus)
+        val replayBus = InMemoryBus<CRDTDecorator.Event<UUID, TypeTag, Long>>()
+        val replayEcs = CRDTDecorator(idGenerator, timestampGenerator, replayBackend, readBus = replayBus)
         events.forEach { event ->
             replayBus.write(event)
         }
@@ -59,18 +59,18 @@ class CDRDTFacadeTests : ECSTests<UUID>() {
     @Test
     fun replayUnorderedTest() {
         val backend = SimpleECS<TypeTag>()
-        val bus = InMemoryBus<CRDTFacade.Event<UUID, TypeTag, Long>>()
-        val ecs = CRDTFacade(idGenerator, timestampGenerator, backend, writeBus = bus)
+        val bus = InMemoryBus<CRDTDecorator.Event<UUID, TypeTag, Long>>()
+        val ecs = CRDTDecorator(idGenerator, timestampGenerator, backend, writeBus = bus)
 
-        val events = mutableListOf<CRDTFacade.Event<UUID, TypeTag, Long>>()
+        val events = mutableListOf<CRDTDecorator.Event<UUID, TypeTag, Long>>()
         bus.subscribe {
             events.add(it)
         }
         fillRandom(ecs, 10, 100)
 
         val replayBackend = SimpleECS<TypeTag>()
-        val replayBus = InMemoryBus<CRDTFacade.Event<UUID, TypeTag, Long>>()
-        val replayEcs = CRDTFacade(idGenerator, timestampGenerator, replayBackend, readBus = replayBus)
+        val replayBus = InMemoryBus<CRDTDecorator.Event<UUID, TypeTag, Long>>()
+        val replayEcs = CRDTDecorator(idGenerator, timestampGenerator, replayBackend, readBus = replayBus)
         events.shuffled().forEach { event ->
             replayBus.write(event)
         }

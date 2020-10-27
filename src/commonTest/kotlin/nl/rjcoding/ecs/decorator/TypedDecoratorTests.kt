@@ -1,4 +1,4 @@
-package nl.rjcoding.ecs.facade
+package nl.rjcoding.ecs.decorator
 
 import nl.rjcoding.ecs.SimpleECS
 import kotlin.reflect.KClass
@@ -6,7 +6,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class TypedECSFacadeTests {
+class TypedDecoratorTests {
 
     data class Name(val name: String)
     data class Age(val age: Int)
@@ -14,7 +14,7 @@ class TypedECSFacadeTests {
     @Test
     fun typedSetGetTest() {
         val backend = SimpleECS<KClass<out Any>>()
-        val ecs = TypedFacade(backend)
+        val ecs = TypedDecorator(backend)
 
         val name = Name("Foo")
         val age = Age(42)
@@ -32,7 +32,7 @@ class TypedECSFacadeTests {
     @Test
     fun typedGetAllTest() {
         val backend = SimpleECS<KClass<out Any>>()
-        val ecs = TypedFacade(backend)
+        val ecs = TypedDecorator(backend)
 
         val name = Name("Foo")
         val age = Age(42)
