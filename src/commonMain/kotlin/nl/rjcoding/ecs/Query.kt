@@ -1,6 +1,6 @@
 package nl.rjcoding.ecs
 
-typealias QueryResult<Id, TypeTag> = Sequence<Pair<Id, Components<TypeTag>>>
+typealias QueryResult<Id, TypeTag> = Sequence<Pair<Id, ComponentContainer<TypeTag>>>
 
 sealed class Query<TypeTag> {
     data class Has<TypeTag>(val typeTag: TypeTag) : Query<TypeTag>()
@@ -22,9 +22,9 @@ class QueryExecutor<Id, TypeTag>(val ecs: ECS<Id, TypeTag>) {
             .filter { (_, components) -> applies(query, components) }
     }
 
-    private fun applies(query: Query<TypeTag>, components: Components<TypeTag>): Boolean {
+    private fun applies(query: Query<TypeTag>, components: ComponentContainer<TypeTag>): Boolean {
         return when (query) {
-            is Query.Has -> components.containsKey(query.typeTag)
+            is Query.Has -> query.typeTag in components
             is Query.Not -> !applies(query.query, components)
             is Query.And -> applies(query.left, components) && applies(query.right, components)
             is Query.Or -> applies(query.left, components) || applies(query.right, components)

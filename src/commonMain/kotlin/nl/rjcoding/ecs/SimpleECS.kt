@@ -39,9 +39,9 @@ class SimpleECS<TypeTag> : ECS<UUID, TypeTag> {
         return components[id]!![type]
     }
 
-    override fun getAll(id: UUID): Components<TypeTag> {
+    override fun getAll(id: UUID): ComponentContainer<TypeTag> {
         requireExists(id)
-        return components[id]!!
+        return SimpleComponentContainer(components[id]!!)
     }
 
     override fun unset(id: UUID, type: TypeTag): Boolean {
@@ -51,5 +51,26 @@ class SimpleECS<TypeTag> : ECS<UUID, TypeTag> {
 
     override fun entities(): Sequence<UUID> {
         return sequenceOf(*components.keys.toTypedArray())
+    }
+}
+
+data class SimpleComponentContainer<TypeTag>(val map: Map<TypeTag, Component<TypeTag>>) : ComponentContainer<TypeTag> {
+
+    override val size: Int = map.size
+
+    override fun typeTags(): Sequence<TypeTag> {
+        return map.keys.asSequence()
+    }
+
+    override fun components(): Sequence<Component<TypeTag>> {
+        return map.values.asSequence()
+    }
+
+    override fun contains(typeTag: TypeTag): Boolean {
+        return map.containsKey(typeTag)
+    }
+
+    override fun get(typeTag: TypeTag): Component<TypeTag>? {
+        return map[typeTag]
     }
 }

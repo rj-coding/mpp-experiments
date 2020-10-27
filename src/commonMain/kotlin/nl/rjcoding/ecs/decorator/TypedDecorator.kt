@@ -13,7 +13,10 @@ inline fun <reified T : Any> T.asTypedComponent(): Component<KClass<out Any>> {
 }
 
 fun <Id> ECS<Id, KClass<out Any>>.getAllTyped(id: Id): Map<KClass<out Any>, Any> {
-    return this.getAll(id).map { it.key to (it.value as TypedComponent<*>).component }.toMap()
+    val container = this.getAll(id)
+    return container.components().map { (it as TypedComponent<*>).let { component ->
+        component.type to component.component
+    } }.toMap()
 }
 
 class TypedDecorator<Id>(
