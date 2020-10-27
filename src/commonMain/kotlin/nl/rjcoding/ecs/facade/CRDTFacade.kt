@@ -1,16 +1,18 @@
-package nl.rjcoding.ecs
+package nl.rjcoding.ecs.facade
 
 import nl.rjcoding.common.Generator
 import nl.rjcoding.common.ReadBus
 import nl.rjcoding.common.WriteBus
+import nl.rjcoding.ecs.Component
+import nl.rjcoding.ecs.ECS
 
-class CRECS<Id, TypeTag, Timestamp : Comparable<Timestamp>>(
+class CRDTFacade<Id, TypeTag, Timestamp : Comparable<Timestamp>>(
     private val idGenerator: Generator<Id>,
     private val timeStampGenerator: Generator<Timestamp>,
-    private val backend: ECS<Id, TypeTag>,
+    backend: ECS<Id, TypeTag>,
     private val readBus: ReadBus<Event<Id, TypeTag, Timestamp>>? = null,
     private val writeBus: WriteBus<Event<Id, TypeTag, Timestamp>>? = null
-): ECS<Id, TypeTag> {
+): AbstractECSFacade<Id, TypeTag>(backend) {
 
     init {
         readBus?.subscribe { event ->
@@ -60,12 +62,6 @@ class CRECS<Id, TypeTag, Timestamp : Comparable<Timestamp>>(
         applyEvent(event)
         return returnValue
     }
-
-    override fun exists(id: Id): Boolean = backend.exists(id)
-    override fun entities(): Sequence<Id> = backend.entities()
-    override fun has(id: Id, type: TypeTag): Boolean = backend.has(id, type)
-    override fun get(id: Id, type: TypeTag): Component<TypeTag>? = backend.get(id, type)
-    override fun getAll(id: Id): Set<Component<TypeTag>> = backend.getAll(id)
 
     private fun applyEvent(event: Event<Id, TypeTag, Timestamp>) {
         invokeEvent(event)

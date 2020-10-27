@@ -1,11 +1,12 @@
-package nl.rjcoding.ecs
+package nl.rjcoding.ecs.facade
 
+import nl.rjcoding.ecs.SimpleECS
 import kotlin.reflect.KClass
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class TypedECSTests {
+class TypedECSFacadeTests {
 
     data class Name(val name: String)
     data class Age(val age: Int)
@@ -13,7 +14,7 @@ class TypedECSTests {
     @Test
     fun typedSetGetTest() {
         val backend = SimpleECS<KClass<out Any>>()
-        val ecs = TypedECS(backend)
+        val ecs = TypedFacade(backend)
 
         val name = Name("Foo")
         val age = Age(42)
@@ -31,7 +32,7 @@ class TypedECSTests {
     @Test
     fun typedGetAllTest() {
         val backend = SimpleECS<KClass<out Any>>()
-        val ecs = TypedECS(backend)
+        val ecs = TypedFacade(backend)
 
         val name = Name("Foo")
         val age = Age(42)
