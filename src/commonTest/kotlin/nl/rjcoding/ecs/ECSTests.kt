@@ -39,13 +39,13 @@ abstract class ECSTests<Id> {
     }
 
     @Test
-    fun existsTest() {
+    fun containtsTest() {
         val ecs = createECS()
         val id = generateId()
 
-        assertFalse { ecs.exists(id) }
+        assertFalse { id in ecs }
         ecs.create(id)
-        assertTrue { ecs.exists(id) }
+        assertTrue { id in ecs }
     }
 
     @Test
@@ -54,7 +54,7 @@ abstract class ECSTests<Id> {
         val id = ecs.create()
         assertFalse { ecs.destroy(generateId()) }
         assertTrue { ecs.destroy(id) }
-        assertFalse { ecs.exists(id) }
+        assertFalse { ecs.contains(id) }
     }
 
     @Test

@@ -9,8 +9,8 @@ import nl.rjcoding.orgchart.util.AreaTree
 class OrgChartPositionSystem<Id>(val ecs: ECS<Id, TypeTag>) {
 
     val query = Query.Or(
-        Query.Has(TypeTag.Department),
-        Query.Has(TypeTag.Function)
+        Query.HasEquals(TypeTag.Kind, OrgChartComponent.Department),
+        Query.HasEquals(TypeTag.Kind, OrgChartComponent.Function)
     )
 
     fun position() {
@@ -32,7 +32,7 @@ class OrgChartPositionSystem<Id>(val ecs: ECS<Id, TypeTag>) {
         val positions = calculatePositions(container)
 
         positions.forEach { (id, position) ->
-            ecs.set(id, position)
+            ecs[id] = position
         }
     }
 

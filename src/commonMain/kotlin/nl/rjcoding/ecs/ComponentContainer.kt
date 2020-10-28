@@ -7,6 +7,6 @@ interface ComponentContainer<TypeTag> {
     fun typeTags(): Sequence<TypeTag>
     fun components(): Sequence<Component<TypeTag>>
 
-    operator fun contains(typeTag: TypeTag): Boolean
+    fun has(typeTag: TypeTag): Boolean
     operator fun get(typeTag: TypeTag): Component<TypeTag>?
 }

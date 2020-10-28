@@ -2,6 +2,7 @@ package nl.rjcoding.orgchart
 
 import nl.rjcoding.common.UUID
 import nl.rjcoding.ecs.SimpleECS
+import nl.rjcoding.ecs.hasEquals
 import nl.rjcoding.ecs.into
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -19,23 +20,23 @@ class OrgChartModuleTests {
         val bar = module.createDepartment("Bar", foo, true)
         val baz = module.createDepartment("Baz", foo)
 
-        assertTrue { ecs.exists(foo) }
-        assertTrue { ecs.exists(bar) }
-        assertTrue { ecs.exists(baz) }
+        assertTrue { foo in ecs }
+        assertTrue { bar in ecs }
+        assertTrue { baz in ecs }
 
-        assertEquals("Foo", ecs.get(foo, TypeTag.Name).into<OrgChartComponent.Name>()?.name)
-        assertEquals("Bar", ecs.get(bar, TypeTag.Name).into<OrgChartComponent.Name>()?.name)
-        assertEquals("Baz", ecs.get(baz, TypeTag.Name).into<OrgChartComponent.Name>()?.name)
+        assertEquals("Foo", ecs[foo, TypeTag.Name].into<OrgChartComponent.Name>()?.name)
+        assertEquals("Bar", ecs[bar, TypeTag.Name].into<OrgChartComponent.Name>()?.name)
+        assertEquals("Baz", ecs[baz, TypeTag.Name].into<OrgChartComponent.Name>()?.name)
 
-        assertEquals(foo, ecs.get(bar, TypeTag.Parent).into<OrgChartComponent.Parent<UUID>>()?.id)
-        assertEquals(foo, ecs.get(baz, TypeTag.Parent).into<OrgChartComponent.Parent<UUID>>()?.id)
+        assertEquals(foo, ecs[bar, TypeTag.Parent].into<OrgChartComponent.Parent<UUID>>()?.id)
+        assertEquals(foo, ecs[baz, TypeTag.Parent].into<OrgChartComponent.Parent<UUID>>()?.id)
 
-        assertTrue { ecs.has(foo, TypeTag.Department) }
-        assertFalse { ecs.has(foo, TypeTag.Function) }
-        assertTrue { ecs.has(bar, TypeTag.Department) }
-        assertFalse { ecs.has(bar, TypeTag.Function) }
-        assertTrue { ecs.has(baz, TypeTag.Department) }
-        assertFalse { ecs.has(baz, TypeTag.Function) }
+        assertTrue { ecs.hasEquals(foo, TypeTag.Kind, OrgChartComponent.Department) }
+        assertFalse { ecs.hasEquals(foo, TypeTag.Kind, OrgChartComponent.Function) }
+        assertTrue { ecs.hasEquals(bar, TypeTag.Kind, OrgChartComponent.Department) }
+        assertFalse { ecs.hasEquals(bar, TypeTag.Kind, OrgChartComponent.Function) }
+        assertTrue { ecs.hasEquals(baz, TypeTag.Kind, OrgChartComponent.Department) }
+        assertFalse { ecs.hasEquals(baz, TypeTag.Kind, OrgChartComponent.Function) }
 
         assertFalse { ecs.has(foo, TypeTag.Assistant) }
         assertTrue { ecs.has(bar, TypeTag.Assistant) }
@@ -54,19 +55,19 @@ class OrgChartModuleTests {
         val baz = module.createFunction("Baz", bar!!)
         assertTrue { baz != null }
 
-        assertTrue { ecs.exists(bar) }
-        assertTrue { ecs.exists(baz!!) }
+        assertTrue { bar in ecs }
+        assertTrue { baz!! in ecs }
 
         assertEquals("Bar", ecs.get(bar, TypeTag.Name).into<OrgChartComponent.Name>()?.name)
         assertEquals("Baz", ecs.get(baz!!, TypeTag.Name).into<OrgChartComponent.Name>()?.name)
 
-        assertEquals(foo, ecs.get(bar, TypeTag.Parent).into<OrgChartComponent.Parent<UUID>>()?.id)
-        assertEquals(bar, ecs.get(baz, TypeTag.Parent).into<OrgChartComponent.Parent<UUID>>()?.id)
+        assertEquals(foo, ecs[bar, TypeTag.Parent].into<OrgChartComponent.Parent<UUID>>()?.id)
+        assertEquals(bar, ecs[baz, TypeTag.Parent].into<OrgChartComponent.Parent<UUID>>()?.id)
 
-        assertFalse { ecs.has(bar, TypeTag.Department) }
-        assertTrue { ecs.has(bar, TypeTag.Function) }
-        assertFalse { ecs.has(baz, TypeTag.Department) }
-        assertTrue { ecs.has(baz, TypeTag.Function) }
+        assertFalse { ecs.hasEquals(bar, TypeTag.Kind, OrgChartComponent.Department) }
+        assertTrue { ecs.hasEquals(bar, TypeTag.Kind, OrgChartComponent.Function) }
+        assertFalse { ecs.hasEquals(baz, TypeTag.Kind, OrgChartComponent.Department) }
+        assertTrue { ecs.hasEquals(baz, TypeTag.Kind, OrgChartComponent.Function) }
 
         assertFalse { ecs.has(foo, TypeTag.Assistant) }
         assertFalse { ecs.has(bar, TypeTag.Assistant) }
@@ -82,14 +83,14 @@ class OrgChartModuleTests {
         val bar = module.createFunction("Bar", foo)
         val baz = module.createFunction("Baz", bar!!)
 
-        assertTrue { ecs.exists(foo) }
-        assertTrue { ecs.exists(bar) }
-        assertTrue { ecs.exists(baz!!) }
+        assertTrue { foo in ecs }
+        assertTrue { bar in ecs }
+        assertTrue { baz!! in ecs }
 
         module.destroy(foo)
-        assertFalse { ecs.exists(foo) }
-        assertFalse { ecs.exists(bar) }
-        assertFalse { ecs.exists(baz!!) }
+        assertFalse { foo in ecs }
+        assertFalse { bar in ecs }
+        assertFalse { baz!! in ecs }
     }
 
 }

@@ -10,7 +10,7 @@ class CRDTDecorator<Id, TypeTag, Timestamp : Comparable<Timestamp>>(
     private val idGenerator: Generator<Id>,
     private val timeStampGenerator: Generator<Timestamp>,
     backend: ECS<Id, TypeTag>,
-    private val readBus: ReadBus<Event<Id, TypeTag, Timestamp>>? = null,
+    readBus: ReadBus<Event<Id, TypeTag, Timestamp>>? = null,
     private val writeBus: WriteBus<Event<Id, TypeTag, Timestamp>>? = null
 ): AbstractECSDecorator<Id, TypeTag>(backend) {
 
@@ -44,7 +44,7 @@ class CRDTDecorator<Id, TypeTag, Timestamp : Comparable<Timestamp>>(
     override fun destroy(id: Id): Boolean {
         val timestamp = timeStampGenerator.generate()
         val event : Event<Id, TypeTag, Timestamp> = Event.Destroy(timestamp, id)
-        val returnValue = backend.exists(id)
+        val returnValue = backend.contains(id)
         applyEvent(event)
         return returnValue
     }
@@ -86,7 +86,7 @@ class CRDTDecorator<Id, TypeTag, Timestamp : Comparable<Timestamp>>(
 
             is Event.Set -> {
                 if (entityTombstones.contains(event.id)) return
-                else if (backend.exists(event.id)) {
+                else if (backend.contains(event.id)) {
                     val existingTimestamp = componentTimestamps[event.id to event.component.type]
                     if (existingTimestamp == null || event.timeStamp > existingTimestamp) {
                         componentTimestamps[event.id to event.component.type] = event.timeStamp
@@ -99,7 +99,7 @@ class CRDTDecorator<Id, TypeTag, Timestamp : Comparable<Timestamp>>(
 
             is Event.UnSet -> {
                 if (entityTombstones.contains(event.id)) return
-                else if (backend.exists(event.id)) {
+                else if (backend.contains(event.id)) {
                     val existingTimestamp = componentTimestamps[event.id to event.type]
                     if (existingTimestamp == null || event.timeStamp > existingTimestamp) {
                         componentTimestamps[event.id to event.type] = event.timeStamp

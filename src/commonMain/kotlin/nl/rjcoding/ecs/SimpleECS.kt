@@ -12,12 +12,12 @@ class SimpleECS<TypeTag> : ECS<UUID, TypeTag> {
         }
     }
 
-    override fun exists(id: UUID): Boolean {
+    override fun contains(id: UUID): Boolean {
         return components.containsKey(id)
     }
 
     private fun requireExists(id: UUID) {
-        require(exists(id)) { "Entity $id does not exist" }
+        require(contains(id)) { "Entity $id does not exist" }
     }
 
     override fun destroy(id: UUID): Boolean {
@@ -34,7 +34,7 @@ class SimpleECS<TypeTag> : ECS<UUID, TypeTag> {
         return components[id]!!.containsKey(type)
     }
 
-    override fun get(id: UUID, type: TypeTag): Component<TypeTag>? {
+    override operator fun get(id: UUID, type: TypeTag): Component<TypeTag>? {
         requireExists(id)
         return components[id]!![type]
     }
@@ -66,7 +66,7 @@ data class SimpleComponentContainer<TypeTag>(val map: Map<TypeTag, Component<Typ
         return map.values.asSequence()
     }
 
-    override fun contains(typeTag: TypeTag): Boolean {
+    override fun has(typeTag: TypeTag): Boolean {
         return map.containsKey(typeTag)
     }
 
