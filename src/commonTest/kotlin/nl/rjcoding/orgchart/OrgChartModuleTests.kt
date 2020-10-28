@@ -13,11 +13,11 @@ class OrgChartModuleTests {
     @Test
     fun createDepartmentTest() {
         val ecs = SimpleECS<TypeTag>()
-        val system = OrgChartModule(ecs)
+        val module = OrgChartModule(ecs)
 
-        val foo = system.createDepartment("Foo")
-        val bar = system.createDepartment("Bar", foo, true)
-        val baz = system.createDepartment("Baz", foo)
+        val foo = module.createDepartment("Foo")
+        val bar = module.createDepartment("Bar", foo, true)
+        val baz = module.createDepartment("Baz", foo)
 
         assertTrue { ecs.exists(foo) }
         assertTrue { ecs.exists(bar) }
@@ -45,13 +45,13 @@ class OrgChartModuleTests {
     @Test
     fun createFunctionTest() {
         val ecs = SimpleECS<TypeTag>()
-        val system = OrgChartModule(ecs)
+        val module = OrgChartModule(ecs)
 
-        val foo = system.createDepartment("Foo")
-        val bar = system.createFunction("Bar", foo)
+        val foo = module.createDepartment("Foo")
+        val bar = module.createFunction("Bar", foo)
         assertTrue { bar != null }
 
-        val baz = system.createFunction("Baz", bar!!)
+        val baz = module.createFunction("Baz", bar!!)
         assertTrue { baz != null }
 
         assertTrue { ecs.exists(bar) }
@@ -76,17 +76,17 @@ class OrgChartModuleTests {
     @Test
     fun destroyTest() {
         val ecs = SimpleECS<TypeTag>()
-        val system = OrgChartModule(ecs)
+        val module = OrgChartModule(ecs)
 
-        val foo = system.createDepartment("Foo")
-        val bar = system.createFunction("Bar", foo)
-        val baz = system.createFunction("Baz", bar!!)
+        val foo = module.createDepartment("Foo")
+        val bar = module.createFunction("Bar", foo)
+        val baz = module.createFunction("Baz", bar!!)
 
         assertTrue { ecs.exists(foo) }
         assertTrue { ecs.exists(bar) }
         assertTrue { ecs.exists(baz!!) }
 
-        system.destroy(foo)
+        module.destroy(foo)
         assertFalse { ecs.exists(foo) }
         assertFalse { ecs.exists(bar) }
         assertFalse { ecs.exists(baz!!) }
