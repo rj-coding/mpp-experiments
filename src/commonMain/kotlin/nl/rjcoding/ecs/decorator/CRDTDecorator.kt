@@ -34,9 +34,9 @@ class CRDTDecorator<Id, TypeTag, Timestamp : Comparable<Timestamp>>(
     }
 
     override fun create(id: Id?): Id {
-        return (id ?: idGenerator.generate()).also { id ->
+        return (id ?: idGenerator.generate()).also { actualId ->
             val timestamp = timeStampGenerator.generate()
-            val event : Event<Id, TypeTag, Timestamp> = Event.Create(timestamp, id)
+            val event : Event<Id, TypeTag, Timestamp> = Event.Create(timestamp, actualId)
             applyEvent(event)
         }
     }
