@@ -1,9 +1,12 @@
 package nl.rjcoding.common
 
-class BinaryHeap<Item>(private val comparator: Comparator<Item>) : Collection<Item>  {
+class BinaryHeap<Item, Weight>(private val comparator: Comparator<Weight>) : Collection<Item>  {
+
+    constructor(compare: (Weight, Weight) -> Int) : this(Comparator<Weight> { a, b -> compare(a, b)})
 
     private val containedItems = mutableSetOf<Item>()
-    private val array = ArrayList<Item>()
+    private val arrayItems = ArrayList<Item>()
+    private val arrayWeights = ArrayList<Weight>()
 
     override var size: Int = 0
         private set
@@ -21,32 +24,35 @@ class BinaryHeap<Item>(private val comparator: Comparator<Item>) : Collection<It
     }
 
     override fun iterator(): Iterator<Item> {
-        val copy = BinaryHeap(comparator)
+        val copy = BinaryHeap<Item, Weight>(comparator)
         (0 until size).forEach { i ->
-            copy.insert(array[i])
+            copy.insert(arrayItems[i], arrayWeights[i])
         }
         return BinaryHeapIterator(copy)
     }
 
-    fun insert(item: Item) {
-        if (array.size > size) {
-            array[size] = item
+    fun insert(item: Item, weight: Weight) {
+        if (arrayItems.size > size) {
+            arrayItems[size] = item
+            arrayWeights[size] = weight
         } else {
-            array.add(item)
+            arrayItems.add(item)
+            arrayWeights.add(weight)
         }
 
         containedItems.add(item)
         size += 1
 
         var i = size - 1
-        while (i != 0 && comparator.compare(array[i], array[parent(i)]) > 0) {
-            swap(i, parent(i))
+        while (i != 0 && comparator.compare(arrayWeights[i], arrayWeights[parent(i)]) > 0) {
+            swap(i, parent(i), arrayItems)
+            swap(i, parent(i), arrayWeights)
             i = parent(i)
         }
     }
 
     fun peek(): Item? {
-        return if (size > 0) array[0] else null
+        return if (size > 0) arrayItems[0] else null
     }
 
     fun pop(): Item? {
@@ -54,47 +60,49 @@ class BinaryHeap<Item>(private val comparator: Comparator<Item>) : Collection<It
 
         if (size == 1) {
             size -= 1
-            return array[0]
+            return arrayItems[0]
         }
 
-        val root = array[0]
-        array[0] = array[size - 1]
+        val rootItem = arrayItems[0]
+        arrayItems[0] = arrayItems[size - 1]
+        arrayWeights[0] = arrayWeights[size - 1]
         size -= 1
         minHeapify(0)
-        return root
+        return rootItem
     }
 
     private fun parent(key: Int): Int = (key - 1) / 2
     private fun left(key: Int): Int = 2 * key + 1
     private fun right(key: Int): Int = 2 * key + 2
 
-    private fun swap(i: Int, j: Int) {
+    private fun <T> swap(i: Int, j: Int, array: ArrayList<T>) {
         val k = array[i]
         array[i] = array[j]
         array[j] = k
     }
 
-    private fun minHeapify(key: Int) {
+    private tailrec fun minHeapify(key: Int) {
         val l = left(key)
         val r = right(key)
         var k = key
 
-        if (l < size && comparator.compare(array[l], array[k]) > 0) {
+        if (l < size && comparator.compare(arrayWeights[l], arrayWeights[k]) > 0) {
             k = l
         }
 
-        if (r < size && comparator.compare(array[r], array[k]) > 0) {
+        if (r < size && comparator.compare(arrayWeights[r], arrayWeights[k]) > 0) {
             k = r
         }
 
         if (k != key) {
-            swap(key, k)
+            swap(key, k, arrayItems)
+            swap(key, k, arrayWeights)
             minHeapify(k)
         }
     }
 }
 
-class BinaryHeapIterator<Item>(private val heap: BinaryHeap<Item>) : Iterator<Item> {
+class BinaryHeapIterator<Item, Weight>(private val heap: BinaryHeap<Item, Weight>) : Iterator<Item> {
 
     override fun hasNext(): Boolean {
         return !heap.isEmpty()
