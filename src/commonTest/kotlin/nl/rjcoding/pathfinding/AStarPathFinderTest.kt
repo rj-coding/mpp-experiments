@@ -1,7 +1,6 @@
 package nl.rjcoding.pathfinding
 
 import nl.rjcoding.common.Integral
-import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

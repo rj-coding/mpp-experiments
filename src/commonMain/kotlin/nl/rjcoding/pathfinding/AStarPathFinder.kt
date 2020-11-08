@@ -1,35 +1,37 @@
 package nl.rjcoding.pathfinding
 import nl.rjcoding.common.BinaryHeap
 
-class AStarPathFinder<Node, Out>(
-    private val nodeImpl: Implementation<Node, Out>
+class AStarPathFinder<Node, Cost>(
+    private val nodeImpl: Implementation<Node, Cost>
 ) : PathFinder<Node>
 {
-    interface Implementation<Node, Out> : Comparator<Out> {
-        fun add(l: Out, r: Out): Out
-        fun cost(from: Node, to: Node): Out
-        fun heuristic(from: Node, to: Node): Out
+    interface Implementation<Node, Cost> : Comparator<Cost> {
+        fun add(l: Cost, r: Cost): Cost
+        fun cost(from: Node, to: Node): Cost
+        fun heuristic(from: Node, to: Node): Cost
         fun neighbours(node: Node): List<Node>
     }
 
     override fun find(from: Node, to: Node): List<Node> {
-        val frontier = BinaryHeap<Node, Out>(nodeImpl)
+        val frontier = BinaryHeap<Node, Cost>(nodeImpl)
         val closedSet = mutableSetOf<Node>()
         val cameFrom = mutableMapOf<Node, Node>()
-        val costs = mutableMapOf<Node, Out>()
+        val costs = mutableMapOf<Node, Cost>()
 
         nodeImpl.cost(from, from).also { initialCost ->
             frontier.insert(from, initialCost)
             costs[from] = initialCost
         }
 
-
-        while (frontier.isNotEmpty()) {
+        var endPoint : Node? = null
+        while (frontier.isNotEmpty() && endPoint == null) {
             val currentNode = frontier.pop()!!
             closedSet.add(currentNode)
 
-            if (currentNode == to)
-                return backTrack(currentNode, cameFrom)
+            if (currentNode == to) {
+                endPoint = currentNode
+                continue
+            }
 
             nodeImpl.neighbours(currentNode)
                 .filter { node -> !closedSet.contains(node) }
@@ -43,7 +45,12 @@ class AStarPathFinder<Node, Out>(
                     }
                 }
         }
-        return listOf()
+
+        if (endPoint != null) {
+            return backTrack(endPoint, cameFrom)
+        } else {
+            return listOf()
+        }
     }
 
     private fun backTrack(end: Node, cameFrom: Map<Node, Node>): List<Node> {
