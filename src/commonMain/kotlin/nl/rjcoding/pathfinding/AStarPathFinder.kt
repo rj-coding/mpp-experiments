@@ -1,9 +1,10 @@
 package nl.rjcoding.pathfinding
+
 import nl.rjcoding.common.BinaryHeap
 
-class AStarPathFinder<Node, Cost>(
+class AStarPathFinder<Node, Cost> (
     private val nodeImpl: Implementation<Node, Cost>
-) : PathFinder<Node>
+) : StepWisePathFinder<Node> where Node : HasPrevious<Node>, Node : AssertsTarget<Node>
 {
     interface Implementation<Node, Cost> : Comparator<Cost> {
         fun add(l: Cost, r: Cost): Cost
@@ -13,9 +14,13 @@ class AStarPathFinder<Node, Cost>(
     }
 
     override fun find(from: Node, to: Node): List<Node> {
+        val steps = findStepWise(from, to)
+        return steps.last()?.let { backTrack(it) } ?: listOf()
+    }
+
+    override fun findStepWise(from: Node, to: Node): Sequence<Node?> = sequence {
         val frontier = BinaryHeap<Node, Cost>(nodeImpl)
         val closedSet = mutableSetOf<Node>()
-        val cameFrom = mutableMapOf<Node, Node>()
         val costs = mutableMapOf<Node, Cost>()
 
         nodeImpl.cost(from, from).also { initialCost ->
@@ -24,11 +29,14 @@ class AStarPathFinder<Node, Cost>(
         }
 
         var endPoint : Node? = null
+
         while (frontier.isNotEmpty() && endPoint == null) {
             val currentNode = frontier.pop()!!
             closedSet.add(currentNode)
 
-            if (currentNode == to) {
+            yield(currentNode)
+
+            if (currentNode.reachedTarget(to)) {
                 endPoint = currentNode
                 continue
             }
@@ -41,25 +49,22 @@ class AStarPathFinder<Node, Cost>(
                         costs[node] = newCost
                         val priority = nodeImpl.add(newCost, nodeImpl.heuristic(node, to))
                         frontier.insert(node, priority)
-                        cameFrom[node] = currentNode
                     }
                 }
         }
 
-        if (endPoint != null) {
-            return backTrack(endPoint, cameFrom)
-        } else {
-            return listOf()
+        if (endPoint == null) {
+            yield(null)
         }
     }
 
-    private fun backTrack(end: Node, cameFrom: Map<Node, Node>): List<Node> {
+    private fun backTrack(end: Node): List<Node> {
         val path = mutableListOf<Node>()
         var next : Node? = end
 
         while (next != null) {
             path.add(next)
-            next = cameFrom[next]
+            next = next.previous
         }
         return path.reversed()
     }
