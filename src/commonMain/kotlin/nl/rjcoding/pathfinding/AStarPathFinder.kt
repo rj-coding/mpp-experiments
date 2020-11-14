@@ -15,7 +15,7 @@ class AStarPathFinder<Node, Cost> (
 
     override fun find(from: Node, to: Node): List<Node> {
         val steps = findStepWise(from, to)
-        return steps.last()?.let { backTrack(it) } ?: listOf()
+        return steps.last()?.backtrack() ?: listOf()
     }
 
     override fun findStepWise(from: Node, to: Node): Sequence<Node?> = sequence {
@@ -56,16 +56,5 @@ class AStarPathFinder<Node, Cost> (
         if (endPoint == null) {
             yield(null)
         }
-    }
-
-    private fun backTrack(end: Node): List<Node> {
-        val path = mutableListOf<Node>()
-        var next : Node? = end
-
-        while (next != null) {
-            path.add(next)
-            next = next.previous
-        }
-        return path.reversed()
     }
 }
