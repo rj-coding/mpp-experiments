@@ -13,9 +13,9 @@ class Grid<Item>(val width: Fraction, val height: Fraction) {
         return occupiedCells[position] ?: Cell.Empty(position)
     }
 
-    fun occupyCell(position: Vector2D, item: Item) {
+    fun addTerminator(position: Vector2D, item: Item) {
         if (withinBounds(position)) {
-            occupiedCells[position] = Cell.Occupied(position, item)
+            occupiedCells[position] = Cell.Terminator(position, item)
         }
     }
 

@@ -9,33 +9,40 @@ sealed class Cell(open val position: Vector2D) {
 
     data class Empty(override val position: Vector2D): Cell(position)
 
-    data class Occupied<Item>(override val position: Vector2D, val item: Item): Cell(position)
+    class Terminator<Item>(override val position: Vector2D, val item: Item): Hub(position)
 
-    class Hub<Path>(override val position: Vector2D): Cell(position) {
+    class Junction(override val position: Vector2D): Hub(position) {
+        data class Connection(val from: Port, val to: Port)
+
+        private val _connections = mutableSetOf<Connection>()
+
+        val connections : Set<Connection> get() = _connections
+
+        fun connect(from: Port, to: Port): Connection {
+            require(isOccoupied(from))
+            require(isOccoupied(to))
+
+            return Connection(from, to).also {
+                _connections.add(it)
+            }
+        }
+    }
+
+    abstract class Hub(override val position: Vector2D): Cell(position) {
         data class Port(val location: Direction, val index: Int)
-        data class PlacedPath<Path>(val path: Path, val entry: Port, val exit: Port)
 
         private val portIndicesOccupied = mutableMapOf<Direction, MutableSet<Int>>()
-        private val placedPaths = mutableListOf<PlacedPath<Path>>()
 
-        fun placeStraightPath(path: Path, location: Direction, index: Int) {
-            val entry = Port(location, index)
-            val exit = Port(location.opposite(), index)
-            placeAngledPath(path, entry, exit)
+        fun attach(port: Port) {
+            require(isFree(port))
+            portIndicesOccupied.getOrPut(port.location) { mutableSetOf() }.add(port.index)
         }
 
-        fun placeAngledPath(path: Path, entry: Port, exit: Port) {
-            require(isFreePort(entry))
-            require(isFreePort(exit))
-
-            placedPaths.add(PlacedPath(path, entry,exit))
-            portIndicesOccupied.getOrPut(entry.location) { mutableSetOf() }.add(entry.index)
-            portIndicesOccupied.getOrPut(exit.location) { mutableSetOf() }.add(exit.index)
-        }
-
-        fun isFreePort(port: Port): Boolean {
+        fun isFree(port: Port): Boolean {
             return portIndicesOccupied[port.location]?.contains(port.index) == false
         }
+
+        fun isOccoupied(port: Port): Boolean = !isFree(port)
 
         fun freePortsAtLocation(location: Direction): List<Port> {
             val occupied = (portIndicesOccupied[location] ?: mutableSetOf())
@@ -49,16 +56,16 @@ sealed class Cell(open val position: Vector2D) {
                 .map { Port(location, it) }
         }
 
-        fun freeIndicesAtLocation(location: Direction): List<Int> {
-            return freePortsAtLocation(location).map { it.index }
-        }
-
         fun freeStraightPathPorts(location: Direction): List<Pair<Port, Port>> {
             val locationIndices = freeIndicesAtLocation(location)
             val oppositeIndices = freeIndicesAtLocation(location.opposite())
             return locationIndices.intersect(oppositeIndices).toList().map { index ->
                 Port(location, index) to Port(location.opposite(), index)
             }
+        }
+
+        private fun freeIndicesAtLocation(location: Direction): List<Int> {
+            return freePortsAtLocation(location).map { it.index }
         }
     }
 
