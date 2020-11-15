@@ -3,125 +3,67 @@ package nl.rjcoding.common
 import kotlin.math.max
 import kotlin.math.min
 
-enum class Direction(val angle: Int) {
-    North(0),
-    East(90),
-    South(180),
-    West(270);
+interface HasArea<T> {
+    val area: Area<T>
+}
 
-    fun opposite(): Direction = when (this) {
-        North -> South
-        East -> West
-        South -> North
-        West -> East
-    }
+val <T> NumericalOps<T>.geometry: GeometryProvider<T>
+    get() = GeometryProvider(this)
 
-    companion object {
-        fun fromAngle(angle: Int): Direction? = when (normalizeAngle(angle)) {
-            0 -> North
-            90 -> East
-            180 -> South
-            270 -> West
-            else -> null
-        }
+class GeometryProvider<T>(private val ops: NumericalOps<T>) {
+    val vector2D = Vector2DProvider(ops)
+    val area = AreaProvider(ops)
+}
 
-        private tailrec fun normalizeAngle(angle: Int): Int = when {
-            angle < 0 -> normalizeAngle(angle + 360)
-            angle >= 360 -> normalizeAngle(angle % 360)
-            else -> angle
-        }
+class Vector2DProvider<T>(private val ops: NumericalOps<T>) {
+    val zero = Vector2D(ops.zero, ops.zero, ops)
+    val unit = Vector2D(ops.unit, ops.unit, ops)
+
+    operator fun invoke(x: T, y: T): Vector2D<T> {
+        return Vector2D(x, y, ops)
     }
 }
 
-object Integral {
+class AreaProvider<T>(private val ops: NumericalOps<T>) {
+    val empty = Area(ops.zero, ops.zero)
+    val unit = Area(ops.unit, ops.unit)
 
-    data class Vector2D(val x: Int, val y: Int) {
-        operator fun plus(other: Vector2D) = Vector2D(x + other.x, y + other.y)
-        operator fun minus(other: Vector2D) = Vector2D(x - other.x, y - other.y)
-
-        companion object {
-            val Origin = Vector2D(0, 0)
-        }
-    }
-
-    data class Area(val width: Int, val height: Int) {
-        companion object {
-            val Zero = Area(0, 0)
-            val Unit = Area(1, 1)
-        }
-    }
-
-    interface HasArea {
-        val area: Area
-    }
-
-    data class Rectangle(val origin: Vector2D, val area: Area) {
-        constructor(x: Int, y: Int, width: Int, height: Int) : this(Vector2D(x, y), Area(width, height))
-
-        val x0 = origin.x
-        val y0 = origin.y
-        val x1 = origin.x + area.width
-        val y1 = origin.y + area.height
-        val width = area.width
-        val height = area.height
-
-        fun move(d: Vector2D) : Rectangle = copy(origin = origin + d)
-
-        operator fun plus(other: Rectangle): Rectangle {
-            val u0 = min(x0, other.x0)
-            val v0 = min(y0, other.y0)
-            val u1 = max(x1, other.x1)
-            val v1 = max(y1, other.y1)
-
-            val width = u1 - u0
-            val height = v1 - v0
-            return Rectangle(u0, v0, width, height)
-        }
-    }
+    operator fun invoke(width: T, height: T) = Area(width, height)
 }
 
-object Fractional {
-    data class Vector2D(val x: Fraction, val y: Fraction) {
-        operator fun plus(other: Vector2D) = Vector2D(x + other.x, y + other.y)
-        operator fun minus(other: Vector2D) = Vector2D(x - other.x, y - other.y)
+class RectangleProvider<T>(private val ops: NumericalOps<T>) {
+    operator fun invoke(origin: Vector2D<T>, area: Area<T>) = Rectangle(origin, area, ops)
+    operator fun invoke(x: T, y: T, width: T, height: T) = Rectangle(x, y, width, height, ops)
+}
 
-        companion object {
-            val Origin = Vector2D(frac(0), frac(0))
-        }
-    }
+data class Vector2D<T>(val x: T, val y: T, private val ops: NumericalOps<T>) {
+    operator fun plus(other: Vector2D<T>) = Vector2D(ops.plus(x, other.x), ops.plus(y, other.y), ops)
+    operator fun minus(other: Vector2D<T>) = Vector2D(ops.minus(x, other.x), ops.minus(y, other.y), ops)
+}
 
-    data class Area(val width: Fraction, val height: Fraction) {
-        companion object {
-            val Zero = Area(frac(0), frac(0))
-            val Unit = Area(frac(1), frac(1))
-        }
-    }
+data class Area<T>(val width: T, val height: T)
 
-    interface HasArea {
-        val area: Area
-    }
+data class Rectangle<T>(val origin: Vector2D<T>, val area: Area<T>, private val ops: NumericalOps<T>) {
 
-    data class Rectangle(val origin: Vector2D, val area: Area) {
-        constructor(x: Fraction, y: Fraction, width: Fraction, height: Fraction) : this(Vector2D(x, y), Area(width, height))
+    constructor(x: T, y: T, width: T, height: T, ops: NumericalOps<T>): this(Vector2D(x, y, ops), Area(width, height), ops)
 
-        val x0 = origin.x
-        val y0 = origin.y
-        val x1 = origin.x + area.width
-        val y1 = origin.y + area.height
-        val width = area.width
-        val height = area.height
+    val x0 = origin.x
+    val y0 = origin.y
+    val x1 = ops.plus(origin.x, area.width)
+    val y1 = ops.plus(origin.y, area.height)
+    val width = area.width
+    val height = area.height
 
-        fun move(d: Vector2D) : Rectangle = copy(origin = origin + d)
+    fun move(d: Vector2D<T>) : Rectangle<T> = copy(origin = origin + d)
 
-        operator fun plus(other: Rectangle): Rectangle {
-            val u0 = min(x0, other.x0)
-            val v0 = min(y0, other.y0)
-            val u1 = max(x1, other.x1)
-            val v1 = max(y1, other.y1)
+    operator fun plus(other: Rectangle<T>): Rectangle<T> {
+        val u0 = ops.min(x0, other.x0)
+        val v0 = ops.min(y0, other.y0)
+        val u1 = ops.max(x1, other.x1)
+        val v1 = ops.max(y1, other.y1)
 
-            val width = u1 - u0
-            val height = v1 - v0
-            return Rectangle(u0, v0, width, height)
-        }
+        val width = ops.minus(u1, u0)
+        val height = ops.min(v1, v0)
+        return Rectangle(u0, v0, width, height, ops)
     }
 }

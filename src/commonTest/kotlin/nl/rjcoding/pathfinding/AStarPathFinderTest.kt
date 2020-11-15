@@ -1,16 +1,18 @@
 package nl.rjcoding.pathfinding
 
 import nl.rjcoding.common.Integral
+import nl.rjcoding.common.Vector2D
+import nl.rjcoding.common.geometry
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-data class Node(val position: Integral.Vector2D, override val previous: Node? = null): HasPrevious<Node>, AssertsTarget<Node> {
+data class Node(val position: Vector2D<Int>, override val previous: Node? = null): HasPrevious<Node>, AssertsTarget<Node> {
     val x = position.x
     val y = position.y
 
-    constructor(x: Int, y: Int): this(Integral.Vector2D(x, y))
+    constructor(x: Int, y: Int): this(Integral.geometry.vector2D(x, y))
 
-    operator fun plus(distance: Integral.Vector2D): Node {
+    operator fun plus(distance: Vector2D<Int>): Node {
         return Node(
             position + distance,
             this
@@ -34,9 +36,9 @@ data class Node(val position: Integral.Vector2D, override val previous: Node? = 
 
 class Grid(val width: Int, val height: Int) : AStarPathFinder.Implementation<Node, Int> {
 
-    private val blocked = mutableSetOf<Integral.Vector2D>()
+    private val blocked = mutableSetOf<Vector2D<Int>>()
 
-    fun block(pos: Integral.Vector2D) {
+    fun block(pos: Vector2D<Int>) {
         blocked.add(pos)
     }
 
@@ -56,10 +58,10 @@ class Grid(val width: Int, val height: Int) : AStarPathFinder.Implementation<Nod
 
     override fun neighbours(node: Node): List<Node> {
         return listOf(
-            node + Integral.Vector2D(1, 0),
-            node + Integral.Vector2D(0, 1),
-            node + Integral.Vector2D(-1, 0),
-            node + Integral.Vector2D(0, -1)
+            node + Integral.geometry.vector2D(1, 0),
+            node + Integral.geometry.vector2D(0, 1),
+            node + Integral.geometry.vector2D(-1, 0),
+            node + Integral.geometry.vector2D(0, -1)
         ).filter {
             it.x in 0 until width && it.y in 0 until height && !blocked.contains(it.position)
         }
@@ -78,13 +80,13 @@ class AStarPathFinderTest {
         val pathFinder = AStarPathFinder(grid)
         val path = pathFinder.find(Node(0, 0), Node(1, 0))
         assertEquals(2, path.size)
-        assertEquals(Integral.Vector2D(1,0), path.last().position)
+        assertEquals(Integral.geometry.vector2D(1,0), path.last().position)
     }
 
     @Test
     fun emptyBlockedTest() {
         val grid = Grid(3, 1)
-        grid.block(Integral.Vector2D(1, 0))
+        grid.block(Integral.geometry.vector2D(1, 0))
         val pathFinder = AStarPathFinder(grid)
         val path = pathFinder.find(Node(0, 0), Node(2, 0))
         assertEquals(0, path.size)
@@ -93,30 +95,30 @@ class AStarPathFinderTest {
     @Test
     fun blockedTest() {
         val grid = Grid(3, 2)
-        grid.block(Integral.Vector2D(1, 0))
+        grid.block(Integral.geometry.vector2D(1, 0))
         val pathFinder = AStarPathFinder(grid)
         val path = pathFinder.find(Node(0, 0), Node(2, 0))
         assertEquals(5, path.size)
-        assertEquals(Integral.Vector2D(2,0), path.last().position)
+        assertEquals(Integral.geometry.vector2D(2,0), path.last().position)
     }
 
     @Test
     fun largeWallTest() {
         val grid = Grid(100, 3)
-        (0 until 99).forEach { grid.block(Integral.Vector2D(it, 1)) }
+        (0 until 99).forEach { grid.block(Integral.geometry.vector2D(it, 1)) }
         val pathFinder = AStarPathFinder(grid)
         val path = pathFinder.find(Node(0, 0), Node(0, 2))
         assertEquals(201, path.size)
-        assertEquals(Integral.Vector2D(0,2), path.last().position)
+        assertEquals(Integral.geometry.vector2D(0,2), path.last().position)
     }
 
     @Test
     fun largeWallAndGridTest() {
         val grid = Grid(100, 101)
-        (0 until 99).forEach { grid.block(Integral.Vector2D(it, 50)) }
+        (0 until 99).forEach { grid.block(Integral.geometry.vector2D(it, 50)) }
         val pathFinder = AStarPathFinder(grid)
         val path = pathFinder.find(Node(0, 0), Node(0, 100))
         assertEquals(299, path.size)
-        assertEquals(Integral.Vector2D(0,100), path.last().position)
+        assertEquals(Integral.geometry.vector2D(0,100), path.last().position)
     }
 }

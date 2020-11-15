@@ -1,27 +1,27 @@
 package nl.rjcoding.orgchart.util
 
-import nl.rjcoding.common.Integral
+import nl.rjcoding.common.*
 import kotlin.math.max
 
-sealed class AreaTree<T> : Integral.HasArea {
+sealed class AreaTree<T> : HasArea<Int> {
 
-    data class Item<T>(val item: T, override val area: Integral.Area): AreaTree<T>()
+    data class Item<T>(val item: T, override val area: Area<Int>): AreaTree<T>()
 
     class Container<T>: AreaTree<T>() {
 
-        private var cursor = Integral.Vector2D(0, 0)
-        private var currentArea : Integral.Area = Integral.Area(0, 0)
-        private var subTrees : MutableMap<Integral.Vector2D, AreaTree<T>> = mutableMapOf()
+        private var cursor = Integral.geometry.vector2D.zero
+        private var currentArea = Integral.geometry.area.empty
+        private var subTrees : MutableMap<Vector2D<Int>, AreaTree<T>> = mutableMapOf()
 
-        override val area: Integral.Area get() = currentArea
-        val children: Sequence<Pair<Integral.Vector2D, AreaTree<T>>> = subTrees.asSequence().map { it.toPair() }
+        override val area: Area<Int> get() = currentArea
+        val children: Sequence<Pair<Vector2D<Int>, AreaTree<T>>> = subTrees.asSequence().map { it.toPair() }
 
         enum class AdditionMode {
             AppendToRow,
             NewRow
         }
 
-        fun add(tree: AreaTree<T>, additionMode: AdditionMode, offset: Integral.Vector2D = Integral.Vector2D(0, 0)) {
+        fun add(tree: AreaTree<T>, additionMode: AdditionMode, offset: Vector2D<Int> = Integral.geometry.vector2D.zero) {
             when (additionMode) {
                 AdditionMode.AppendToRow -> {
                     cursor = cursor.copy(x = currentArea.width + offset.x)

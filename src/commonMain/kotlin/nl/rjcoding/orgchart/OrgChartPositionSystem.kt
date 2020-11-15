@@ -1,6 +1,8 @@
 package nl.rjcoding.orgchart
 
 import nl.rjcoding.common.Integral
+import nl.rjcoding.common.Vector2D
+import nl.rjcoding.common.geometry
 import nl.rjcoding.ecs.ECS
 import nl.rjcoding.ecs.Query
 import nl.rjcoding.ecs.into
@@ -43,7 +45,7 @@ class OrgChartPositionSystem<Id>(val ecs: ECS<Id, TypeTag>) {
     }
 
     private fun positionEntity(entity: Id, ctx: Context<Id>): AreaTree<Id> {
-        val item = AreaTree.Item(entity, Integral.Area.Unit)
+        val item = AreaTree.Item(entity, Integral.geometry.area.unit)
         if (!ctx.hasChildren(entity))
             return item
 
@@ -54,7 +56,7 @@ class OrgChartPositionSystem<Id>(val ecs: ECS<Id, TypeTag>) {
         tree.add(
             item,
             additionMode = AreaTree.Container.AdditionMode.AppendToRow,
-            offset = Integral.Vector2D((childNodes.area.width - 1) / 2, 0)
+            offset = Integral.geometry.vector2D((childNodes.area.width - 1) / 2, 0)
         )
         tree.add(
             childNodes,
@@ -65,7 +67,7 @@ class OrgChartPositionSystem<Id>(val ecs: ECS<Id, TypeTag>) {
 
     private fun calculatePositions(areaTree: AreaTree<Id>): Map<Id, OrgChartComponent.Position> {
 
-        fun inner(origin: Integral.Vector2D, areaTree: AreaTree<Id>, acc: MutableMap<Id, OrgChartComponent.Position>) {
+        fun inner(origin: Vector2D<Int>, areaTree: AreaTree<Id>, acc: MutableMap<Id, OrgChartComponent.Position>) {
             return when (areaTree) {
                 is AreaTree.Item -> {
                     acc[areaTree.item] = OrgChartComponent.Position(origin.x, origin.y)
@@ -80,7 +82,7 @@ class OrgChartPositionSystem<Id>(val ecs: ECS<Id, TypeTag>) {
         }
 
         val acc = mutableMapOf<Id, OrgChartComponent.Position>()
-        inner(Integral.Vector2D.Origin, areaTree, acc)
+        inner(Integral.geometry.vector2D.zero, areaTree, acc)
         return acc
     }
 

@@ -1,17 +1,18 @@
 package nl.rjcoding.pathfinding.sensus
 
 import nl.rjcoding.common.Direction
-import nl.rjcoding.common.Fractional.Vector2D
+import nl.rjcoding.common.Fraction
+import nl.rjcoding.common.Vector2D
 import kotlin.math.max
 import kotlin.math.min
 
-sealed class Cell(open val position: Vector2D) {
+sealed class Cell(open val position: Vector2D<Fraction>) {
 
-    data class Empty(override val position: Vector2D): Cell(position)
+    data class Empty(override val position: Vector2D<Fraction>): Cell(position)
 
-    class Terminator<Item>(override val position: Vector2D, val item: Item): Hub(position)
+    class Terminator<Item>(override val position: Vector2D<Fraction>, val item: Item): Hub(position)
 
-    class Junction(override val position: Vector2D): Hub(position) {
+    class Junction(override val position: Vector2D<Fraction>): Hub(position) {
         data class Connection(val from: Port, val to: Port)
 
         private val _connections = mutableSetOf<Connection>()
@@ -28,7 +29,7 @@ sealed class Cell(open val position: Vector2D) {
         }
     }
 
-    abstract class Hub(override val position: Vector2D): Cell(position) {
+    abstract class Hub(override val position: Vector2D<Fraction>): Cell(position) {
         data class Port(val location: Direction, val index: Int)
 
         private val portIndicesOccupied = mutableMapOf<Direction, MutableSet<Int>>()
