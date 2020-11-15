@@ -3,7 +3,7 @@ package nl.rjcoding.common
 data class Fraction(val num: Int, val den: Int) {
     constructor(a: Int) : this(a, 1)
 
-    fun simplify() = gcd(num, den).let { Fraction(num / it, den / it) }
+    fun simplify() = Integral.gcd(num, den).let { Fraction(num / it, den / it) }
     fun inverse() = Fraction(den, num)
 
     operator fun plus(other: Fraction) = Fraction(num * other.den + other.num * den, den * other.den)

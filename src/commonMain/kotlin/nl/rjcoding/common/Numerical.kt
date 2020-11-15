@@ -40,6 +40,11 @@ object Integral : NumericalOps<Int> {
 
     override val zero: Int = 0
     override val unit: Int = 1
+
+    tailrec fun gcd(a: Int, b: Int): Int {
+        if (b == 0) return a
+        else return gcd(b, a % b)
+    }
 }
 
 object Fractional : NumericalOps<Fraction> {
