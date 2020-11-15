@@ -47,6 +47,35 @@ object Integral : NumericalOps<Int> {
     }
 }
 
+object Rational : NumericalOps<Double> {
+    override fun plus(left: Double, right: Double): Double {
+        return left + right
+    }
+
+    override fun minus(left: Double, right: Double): Double {
+        return left - right
+    }
+
+    override fun times(left: Double, right: Double): Double {
+        return left * right
+    }
+
+    override fun div(left: Double, right: Double): Double {
+        return left / right
+    }
+
+    override fun min(left: Double, right: Double): Double {
+        return kotlin.math.min(left, right)
+    }
+
+    override fun max(left: Double, right: Double): Double {
+        return kotlin.math.max(left, right)
+    }
+
+    override val zero: Double = 0.0
+    override val unit: Double = 1.0
+}
+
 object Fractional : NumericalOps<Fraction> {
     override fun plus(left: Fraction, right: Fraction): Fraction {
         return left + right

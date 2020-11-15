@@ -1,7 +1,40 @@
 package nl.rjcoding.common
 
-import kotlin.math.max
-import kotlin.math.min
+enum class RotationalOrientation {
+    Collinear,
+    Clockwise,
+    CounterClockwise
+}
+
+enum class Direction(val angle: Int) {
+    North(0),
+    East(90),
+    South(180),
+    West(270);
+
+    fun opposite(): Direction = when (this) {
+        North -> South
+        East -> West
+        South -> North
+        West -> East
+    }
+
+    companion object {
+        fun fromAngle(angle: Int): Direction? = when (normalizeAngle(angle)) {
+            0 -> North
+            90 -> East
+            180 -> South
+            270 -> West
+            else -> null
+        }
+
+        private tailrec fun normalizeAngle(angle: Int): Int = when {
+            angle < 0 -> normalizeAngle(angle + 360)
+            angle >= 360 -> normalizeAngle(angle % 360)
+            else -> angle
+        }
+    }
+}
 
 interface HasArea<T> {
     val area: Area<T>
@@ -12,7 +45,9 @@ val <T> NumericalOps<T>.geometry: GeometryProvider<T>
 
 class GeometryProvider<T>(private val ops: NumericalOps<T>) {
     val vector2D = Vector2DProvider(ops)
+    val line = LineProvider(ops)
     val area = AreaProvider(ops)
+    val rectangle = RectangleProvider(ops)
 }
 
 class Vector2DProvider<T>(private val ops: NumericalOps<T>) {
@@ -22,6 +57,25 @@ class Vector2DProvider<T>(private val ops: NumericalOps<T>) {
     operator fun invoke(x: T, y: T): Vector2D<T> {
         return Vector2D(x, y, ops)
     }
+
+    fun orientation(p: Vector2D<T>, q: Vector2D<T>, r: Vector2D<T>): RotationalOrientation {
+        val a = ops.minus(q.y, p.y)
+        val b = ops.minus(r.x, q.x)
+        val c = ops.minus(q.x, p.x)
+        val d = ops.minus(r.y, q.y)
+        val z = ops.minus(ops.times(a, b), ops.times(c, d))
+
+        return when (z) {
+            ops.zero -> RotationalOrientation.Collinear
+            ops.max(z, ops.zero) -> RotationalOrientation.Clockwise
+            else -> RotationalOrientation.CounterClockwise
+        }
+    }
+}
+
+class LineProvider<T>(private val ops: NumericalOps<T>) {
+    operator fun invoke(start: Vector2D<T>, end: Vector2D<T>): Line<T> = Line(start, end, ops)
+    operator fun invoke(x0: T, y0: T, x1: T, y1: T): Line<T> = Line(x0, y0, x1, y1, ops)
 }
 
 class AreaProvider<T>(private val ops: NumericalOps<T>) {
@@ -39,6 +93,26 @@ class RectangleProvider<T>(private val ops: NumericalOps<T>) {
 data class Vector2D<T>(val x: T, val y: T, private val ops: NumericalOps<T>) {
     operator fun plus(other: Vector2D<T>) = Vector2D(ops.plus(x, other.x), ops.plus(y, other.y), ops)
     operator fun minus(other: Vector2D<T>) = Vector2D(ops.minus(x, other.x), ops.minus(y, other.y), ops)
+}
+
+data class Line<T>(val start: Vector2D<T>, val end: Vector2D<T>, private val ops: NumericalOps<T>) {
+    constructor(x0: T, y0: T, x1: T, y1: T, ops: NumericalOps<T>): this(Vector2D(x0, y0, ops), Vector2D(x1, y1, ops), ops)
+
+    fun intersects(other: Line<T>): Boolean {
+        val vec = Vector2DProvider(ops)
+
+        val p1 = this.start
+        val q1 = this.end
+        val p2 = other.start
+        val q2 = other.end
+
+        val o1 = vec.orientation(p1, q1, p2)
+        val o2 = vec.orientation(p1, q1, q2)
+        val o3 = vec.orientation(p2, q2, p1)
+        val o4 = vec.orientation(p2, q2, q1)
+
+        return (o1 != o2 && o3 != o4)
+    }
 }
 
 data class Area<T>(val width: T, val height: T)
