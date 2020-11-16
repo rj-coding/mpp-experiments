@@ -5,7 +5,7 @@ import nl.rjcoding.common.Vector2D
 import nl.rjcoding.common.geometry
 import nl.rjcoding.ecs.ECS
 import nl.rjcoding.ecs.Query
-import nl.rjcoding.ecs.into
+import nl.rjcoding.ecs.*
 import nl.rjcoding.orgchart.util.AreaTree
 
 class OrgChartPositionSystem<Id>(val ecs: ECS<Id, TypeTag>) {
@@ -34,7 +34,7 @@ class OrgChartPositionSystem<Id>(val ecs: ECS<Id, TypeTag>) {
         val positions = calculatePositions(container)
 
         positions.forEach { (id, position) ->
-            ecs[id] = position
+            ecs[id] += position
         }
     }
 

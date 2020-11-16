@@ -6,6 +6,11 @@ enum class RotationalOrientation {
     CounterClockwise
 }
 
+enum class Orientation {
+    Horizontal,
+    Vertical
+}
+
 enum class Direction(val angle: Int) {
     North(0),
     East(90),

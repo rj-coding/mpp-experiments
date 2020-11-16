@@ -9,9 +9,9 @@ interface ECS<Id, TypeTag> {
     operator fun contains(id: Id): Boolean
     fun destroy(id: Id): Boolean
 
-    operator fun set(id: Id, component: Component<TypeTag>)
+    fun set(id: Id, component: Component<TypeTag>)
     fun has(id: Id, type: TypeTag): Boolean
-    operator fun get(id: Id, type: TypeTag): Component<TypeTag>?
+    fun get(id: Id, type: TypeTag): Component<TypeTag>?
     fun getAll(id: Id): ComponentContainer<TypeTag>
     fun unset(id: Id, type: TypeTag): Boolean
 

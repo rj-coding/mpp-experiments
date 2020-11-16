@@ -1,13 +1,13 @@
 package nl.rjcoding.orgchart
 
 import nl.rjcoding.ecs.ECS
-import nl.rjcoding.ecs.hasEquals
-import nl.rjcoding.ecs.into
+import nl.rjcoding.ecs.*
 
 class OrgChartModule<Id>(val ecs: ECS<Id, TypeTag>) {
 
-    fun createDepartment(name: String, parent: Id? = null, isAssistant: Boolean = false): Id = ecs.create().also { id ->
-        ecs[id] = OrgChartComponent.Department
+    fun createDepartment(name: String, parent: Id? = null, isAssistant: Boolean = false): Id = ecs.create { id ->
+        ecs[id] += OrgChartComponent.Department
+
         setName(id, name)
         if (parent != null && ecs.contains(parent)) {
             setParent(id, parent)
@@ -17,8 +17,9 @@ class OrgChartModule<Id>(val ecs: ECS<Id, TypeTag>) {
 
     fun createFunction(name: String, parent: Id): Id? {
         if (ecs.contains(parent)) {
-            return ecs.create().also { id ->
-                ecs.set(id, OrgChartComponent.Function)
+            return ecs.create { id ->
+                ecs[id] += OrgChartComponent.Function
+
                 setName(id, name)
                 setParent(id, parent)
             }
@@ -28,7 +29,7 @@ class OrgChartModule<Id>(val ecs: ECS<Id, TypeTag>) {
 
     fun setName(id: Id, name: String) {
         if (!ecs.contains(id)) return
-        ecs[id] = OrgChartComponent.Name(name)
+        ecs[id] += OrgChartComponent.Name(name)
     }
 
     fun setParent(id: Id, parent: Id?) {
@@ -37,18 +38,18 @@ class OrgChartModule<Id>(val ecs: ECS<Id, TypeTag>) {
         if (parent == null && ecs.hasEquals(id, TypeTag.Kind, OrgChartComponent.Department)) {
             ecs.unset(id, TypeTag.Parent)
         } else if (ecs.contains(parent!!)) {
-            ecs.get(id, TypeTag.Parent).into<OrgChartComponent.Parent<Id>>()?.also { oldParent ->
-                ecs[oldParent.id, TypeTag.Children].into<OrgChartComponent.Children<Id>>()?.also { oldChildren ->
-                    ecs[oldParent.id] = OrgChartComponent.Children(oldChildren.children - id)
+            ecs.get(id, TypeTag.Parent).into<OrgChartComponent.Parent<Id>>() { oldParent ->
+                ecs.get(oldParent.id, TypeTag.Children).into<OrgChartComponent.Children<Id>>()?.also { oldChildren ->
+                    ecs[oldParent.id] += OrgChartComponent.Children(oldChildren.children - id)
                 }
             }
 
-            ecs[id] = OrgChartComponent.Parent(parent)
+            ecs[id] += OrgChartComponent.Parent(parent)
 
             if (!ecs.has(parent, TypeTag.Children)) {
-                ecs[parent] = OrgChartComponent.Children(listOf<Id>(id))
+                ecs[parent] += OrgChartComponent.Children(listOf(id))
             } else {
-                ecs[parent] = OrgChartComponent.Children(ecs.get(parent, TypeTag.Children).into<OrgChartComponent.Children<Id>>()!!.children + id)
+                ecs[parent] += OrgChartComponent.Children(ecs.get(parent, TypeTag.Children).into<OrgChartComponent.Children<Id>>()!!.children + id)
             }
         }
     }
@@ -59,10 +60,10 @@ class OrgChartModule<Id>(val ecs: ECS<Id, TypeTag>) {
         if (isAssistant) {
             val components = ecs.getAll(id)
             if (components.hasEquals(TypeTag.Kind, OrgChartComponent.Department) && components.has(TypeTag.Parent)) {
-                ecs[id] = OrgChartComponent.Assistant
+                ecs[id] += OrgChartComponent.Assistant
             }
         } else {
-            ecs.unset(id, TypeTag.Assistant)
+            ecs[id] -= TypeTag.Assistant
         }
     }
 
@@ -79,7 +80,7 @@ class OrgChartModule<Id>(val ecs: ECS<Id, TypeTag>) {
         if (!ecs.contains(id)) return setOf()
 
         return ecs.entities().filter { childId ->
-            ecs[childId, TypeTag.Parent].into<OrgChartComponent.Parent<Id>>()?.id == id
+            ecs.get(childId, TypeTag.Parent).into<OrgChartComponent.Parent<Id>>()?.id == id
         }.toSet()
     }
 }
