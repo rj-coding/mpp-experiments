@@ -12,10 +12,6 @@ interface HasPrevious<Node> where Node : HasPrevious<Node> {
     val previous: Node?
 }
 
-interface AssertsTarget<Node> {
-    fun reachedTarget(target: Node): Boolean
-}
-
 fun <Node> Node.backtrack(): List<Node> where Node : HasPrevious<Node> {
     val path = mutableListOf<Node>()
     var next : Node? = this

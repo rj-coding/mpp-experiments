@@ -6,7 +6,7 @@ import nl.rjcoding.common.geometry
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-data class Node(val position: Vector2D<Int>, override val previous: Node? = null): HasPrevious<Node>, AssertsTarget<Node> {
+data class Node(val position: Vector2D<Int>, override val previous: Node? = null): HasPrevious<Node> {
     val x = position.x
     val y = position.y
 
@@ -17,10 +17,6 @@ data class Node(val position: Vector2D<Int>, override val previous: Node? = null
             position + distance,
             this
         )
-    }
-
-    override fun reachedTarget(target: Node): Boolean {
-        return position == target.position
     }
 
     override fun equals(other: Any?): Boolean {
@@ -69,6 +65,10 @@ class Grid(val width: Int, val height: Int) : AStarPathFinder.Implementation<Nod
 
     override fun compare(a: Int, b: Int): Int {
         return a - b
+    }
+
+    override fun isSame(l: Node, r: Node): Boolean {
+        return l.position == r.position
     }
 }
 

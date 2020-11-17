@@ -21,6 +21,12 @@ class Grid<Item>(val width: Fraction, val height: Fraction) {
         }
     }
 
+    fun addJunction(position: Vector2D<Fraction>) {
+        if (withinBounds(position)) {
+            occupiedCells[position] = Cell.Junction(position)
+        }
+    }
+
     fun clearCell(position: Vector2D<Fraction>) {
         if (withinBounds(position)) {
             occupiedCells.remove(position)

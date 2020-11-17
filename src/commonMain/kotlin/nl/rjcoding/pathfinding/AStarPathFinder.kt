@@ -4,13 +4,14 @@ import nl.rjcoding.common.BinaryHeap
 
 class AStarPathFinder<Node, Cost> (
     private val nodeImpl: Implementation<Node, Cost>
-) : StepWisePathFinder<Node> where Node : HasPrevious<Node>, Node : AssertsTarget<Node>
+) : StepWisePathFinder<Node> where Node : HasPrevious<Node>
 {
     interface Implementation<Node, Cost> : Comparator<Cost> {
         fun add(l: Cost, r: Cost): Cost
         fun cost(from: Node, to: Node): Cost
         fun heuristic(from: Node, to: Node): Cost
         fun neighbours(node: Node): List<Node>
+        fun isSame(l: Node, r: Node): Boolean
     }
 
     override fun find(from: Node, to: Node): List<Node> {
@@ -36,7 +37,7 @@ class AStarPathFinder<Node, Cost> (
 
             yield(currentNode)
 
-            if (currentNode.reachedTarget(to)) {
+            if (nodeImpl.isSame(currentNode, to)) {
                 endPoint = currentNode
                 continue
             }

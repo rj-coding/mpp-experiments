@@ -35,6 +35,8 @@ data class Fraction(val num: Int, val den: Int) {
         return 31 * s.num.hashCode() + s.den.hashCode()
     }
 
+    fun toDouble(): Double = num.toDouble() / den.toDouble()
+
 }
 
 fun frac(num: Int, den: Int): Fraction = Fraction(num, den)
