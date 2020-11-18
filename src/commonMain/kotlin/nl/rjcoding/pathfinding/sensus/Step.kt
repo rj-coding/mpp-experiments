@@ -1,15 +1,35 @@
 package nl.rjcoding.pathfinding.sensus
 
-import nl.rjcoding.common.Fraction
-import nl.rjcoding.common.Vector2D
 import nl.rjcoding.pathfinding.HasPrevious
 
-sealed class Step(val position: Vector2D<Fraction>, override val previous: Step?) : HasPrevious<Step>
+sealed class Step(override val previous: Step?) : HasPrevious<Step>
 
-data class Start<Item>(val terminator: Cell.Terminator<Item>) : Step(terminator.position, null)
+abstract class Terminator<Item>(val terminator: Cell.Terminator<Item>, previous: Step?) : Step(previous) {
+    override fun hashCode(): Int {
+        return terminator.position.hashCode()
+    }
 
-data class OutBound(val hub: Cell.Hub, val port: Cell.Hub.Port, override val previous: Step) : Step(hub.position, previous)
+    override fun equals(other: Any?): Boolean {
+        return (other as? Terminator<*>)?.let { otherStep ->
+            terminator.position == otherStep.terminator.position
+        } ?: false
+    }
+}
 
-data class InBound(val hub: Cell.Hub, val port: Cell.Hub.Port, override val previous: Step) : Step(hub.position, previous)
+class Start<Item>(terminator: Cell.Terminator<Item>) : Terminator<Item>(terminator, null)
+class End<Item>(terminator: Cell.Terminator<Item>, previous: Step) : Terminator<Item>(terminator, previous)
 
-data class End<Item>(val terminator: Cell.Terminator<Item>, override val previous: Step) : Step(terminator.position, previous)
+class Connection(val from: Cell.Hub, val to: Cell.Hub, val index: Int, previous: Step) : Step(previous) {
+
+    override fun hashCode(): Int {
+        return (from.position to to.position).hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return (other as? Connection)?.let { otherConnection ->
+            from.position == otherConnection.from.position
+                    && to.position == otherConnection.to.position
+                    && index == otherConnection.index
+        } ?: false
+    }
+}

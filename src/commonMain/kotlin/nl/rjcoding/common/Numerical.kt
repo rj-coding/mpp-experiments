@@ -9,6 +9,8 @@ interface NumericalOps<T> {
     fun min(left: T, right: T): T
     fun max(left: T, right: T): T
 
+    fun compare(left: T, right: T): Int
+
     val zero: T
     val unit: T
 }
@@ -36,6 +38,10 @@ object Integral : NumericalOps<Int> {
 
     override fun max(left: Int, right: Int): Int {
         return kotlin.math.max(left, right)
+    }
+
+    override fun compare(left: Int, right: Int): Int {
+        return left.compareTo(right)
     }
 
     override val zero: Int = 0
@@ -72,6 +78,10 @@ object Rational : NumericalOps<Double> {
         return kotlin.math.max(left, right)
     }
 
+    override fun compare(left: Double, right: Double): Int {
+        return left.compareTo(right)
+    }
+
     override val zero: Double = 0.0
     override val unit: Double = 1.0
 }
@@ -99,6 +109,10 @@ object Fractional : NumericalOps<Fraction> {
 
     override fun max(left: Fraction, right: Fraction): Fraction {
         return max(left, right)
+    }
+
+    override fun compare(left: Fraction, right: Fraction): Int {
+        return minus(left, right).num
     }
 
     override val zero: Fraction = Fraction(0, 0)

@@ -11,7 +11,6 @@ class AStarPathFinder<Node, Cost> (
         fun cost(from: Node, to: Node): Cost
         fun heuristic(from: Node, to: Node): Cost
         fun neighbours(node: Node): List<Node>
-        fun isSame(l: Node, r: Node): Boolean
     }
 
     override fun find(from: Node, to: Node): List<Node> {
@@ -37,7 +36,7 @@ class AStarPathFinder<Node, Cost> (
 
             yield(currentNode)
 
-            if (nodeImpl.isSame(currentNode, to)) {
+            if (currentNode == to) {
                 endPoint = currentNode
                 continue
             }

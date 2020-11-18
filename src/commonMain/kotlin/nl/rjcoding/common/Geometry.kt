@@ -8,7 +8,12 @@ enum class RotationalOrientation {
 
 enum class Orientation {
     Horizontal,
-    Vertical
+    Vertical;
+
+    fun directions(): Pair<Direction, Direction> = when (this) {
+        Horizontal -> Direction.East to Direction.West
+        Vertical -> Direction.North to Direction.South
+    }
 }
 
 enum class Direction(val angle: Int) {

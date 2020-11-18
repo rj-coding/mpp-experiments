@@ -21,7 +21,7 @@ data class Node(val position: Vector2D<Int>, override val previous: Node? = null
 
     override fun equals(other: Any?): Boolean {
         return (other as? Node)?.let { otherNode ->
-            position.equals(otherNode.position)
+            position == otherNode.position
         } ?: false
     }
 
@@ -65,10 +65,6 @@ class Grid(val width: Int, val height: Int) : AStarPathFinder.Implementation<Nod
 
     override fun compare(a: Int, b: Int): Int {
         return a - b
-    }
-
-    override fun isSame(l: Node, r: Node): Boolean {
-        return l.position == r.position
     }
 }
 

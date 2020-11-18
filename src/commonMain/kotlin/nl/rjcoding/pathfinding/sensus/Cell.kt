@@ -31,6 +31,7 @@ sealed class Cell(open val position: Vector2D<Fraction>) {
     abstract class Hub(override val position: Vector2D<Fraction>): Cell(position) {
         data class Port(val location: Direction, val index: Int)
 
+        private val closedLocations = mutableSetOf<Direction>()
         private val portIndicesOccupied = mutableMapOf<Direction, MutableSet<Int>>()
 
         fun attach(port: Port) {
@@ -39,10 +40,26 @@ sealed class Cell(open val position: Vector2D<Fraction>) {
         }
 
         fun isFree(port: Port): Boolean {
-            return !(portIndicesOccupied[port.location]?.contains(port.index) ?: false)
+            return if (closedLocations.contains(port.location)) {
+                false
+            } else {
+                !(portIndicesOccupied[port.location]?.contains(port.index) ?: false)
+            }
         }
 
         fun isOccupied(port: Port): Boolean = !isFree(port)
+
+        fun occupiedIndices(location: Direction): Set<Int> {
+            return portIndicesOccupied[location] ?: setOf()
+        }
+
+        fun closeLocation(location: Direction) {
+            closedLocations.add(location)
+        }
+
+        fun openLocation(location: Direction) {
+            closedLocations.remove(location)
+        }
     }
 
 }
