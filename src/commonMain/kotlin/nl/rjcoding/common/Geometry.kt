@@ -29,6 +29,11 @@ enum class Direction(val angle: Int) {
         West -> East
     }
 
+    fun orientation(): Orientation = when (this) {
+        North, South -> Orientation.Vertical
+        East, West -> Orientation.Horizontal
+    }
+
     companion object {
         fun fromAngle(angle: Int): Direction? = when (normalizeAngle(angle)) {
             0 -> North

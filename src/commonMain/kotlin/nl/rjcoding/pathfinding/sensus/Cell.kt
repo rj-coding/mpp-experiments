@@ -2,64 +2,69 @@ package nl.rjcoding.pathfinding.sensus
 
 import nl.rjcoding.common.Direction
 import nl.rjcoding.common.Fraction
-import nl.rjcoding.common.Orientation
 import nl.rjcoding.common.Vector2D
 
-sealed class Cell(open val position: Vector2D<Fraction>) {
+class Cell<Item>(open val position: Vector2D<Fraction>) {
 
-    data class Empty(override val position: Vector2D<Fraction>): Cell(position)
+    data class Port(val direction: Direction, val index: Int)
+    data class Link(val from: Port, val to: Port)
 
-    class Terminator<Item>(override val position: Vector2D<Fraction>, val item: Item): Hub(position)
+    private val closedLocations = mutableSetOf<Direction>()
+    private val portIndicesOccupied = mutableMapOf<Direction, MutableSet<Int>>()
+    private val _links = mutableSetOf<Link>()
 
-    class Junction(override val position: Vector2D<Fraction>): Hub(position) {
-        data class Connection(val from: Port, val to: Port)
+    val links : Set<Link> get() = _links
 
-        private val _connections = mutableSetOf<Connection>()
+    var item: Item? = null
 
-        val connections : Set<Connection> get() = _connections
+    fun hasItem(): Boolean = item != null
 
-        fun connect(from: Port, to: Port) {
-            require(isOccupied(from))
-            require(isOccupied(to))
-            require(from != to)
+    fun attach(port: Port) {
+        require(isFree(port))
+        portIndicesOccupied.getOrPut(port.direction) { mutableSetOf() }.add(port.index)
+    }
 
-            val connection = Connection(from, to)
-            _connections.add(connection)
+    fun isFree(port: Port): Boolean {
+        return if (closedLocations.contains(port.direction)) {
+            false
+        } else {
+            !(portIndicesOccupied[port.direction]?.contains(port.index) ?: false)
         }
     }
 
-    abstract class Hub(override val position: Vector2D<Fraction>): Cell(position) {
-        data class Port(val location: Direction, val index: Int)
+    fun isOccupied(port: Port): Boolean = !isFree(port)
 
-        private val closedLocations = mutableSetOf<Direction>()
-        private val portIndicesOccupied = mutableMapOf<Direction, MutableSet<Int>>()
-
-        fun attach(port: Port) {
-            require(isFree(port))
-            portIndicesOccupied.getOrPut(port.location) { mutableSetOf() }.add(port.index)
-        }
-
-        fun isFree(port: Port): Boolean {
-            return if (closedLocations.contains(port.location)) {
-                false
-            } else {
-                !(portIndicesOccupied[port.location]?.contains(port.index) ?: false)
-            }
-        }
-
-        fun isOccupied(port: Port): Boolean = !isFree(port)
-
-        fun occupiedIndices(location: Direction): Set<Int> {
-            return portIndicesOccupied[location] ?: setOf()
-        }
-
-        fun closeLocation(location: Direction) {
-            closedLocations.add(location)
-        }
-
-        fun openLocation(location: Direction) {
-            closedLocations.remove(location)
-        }
+    fun occupiedIndices(location: Direction): Set<Int> {
+        return portIndicesOccupied[location] ?: setOf()
     }
 
+    fun closeDirection(direction: Direction) {
+        closedLocations.add(direction)
+    }
+
+    fun openDirection(direction: Direction) {
+        closedLocations.remove(direction)
+    }
+
+    fun link(from: Port, to: Port) {
+        require(isOccupied(from))
+        require(isOccupied(to))
+        require(from != to)
+
+        val connection = Link(from, to)
+        _links.add(connection)
+    }
+
+    fun directionTo(other: Cell<Item>): Direction? = when {
+        position.x == other.position.x && position.y == other.position.y -> null
+        position.x != other.position.x && position.y != other.position.y -> null
+        position.x == other.position.x -> when {
+            position.y < other.position.y -> Direction.South
+            else -> Direction.North
+        }
+        else -> when {
+            position.x < other.position.x -> Direction.East
+            else -> Direction.West
+        }
+    }
 }

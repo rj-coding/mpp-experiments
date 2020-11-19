@@ -3,7 +3,7 @@ package nl.rjcoding.pathfinding.sensus
 import nl.rjcoding.common.*
 import nl.rjcoding.pathfinding.AStarPathFinder
 
-class ActivityFlowImplementation(val grid: Grid<String>) : AStarPathFinder.Implementation<Step, Double> {
+class ActivityFlowImplementation<Item>(val grid: Grid<Item>) : AStarPathFinder.Implementation<Step, Double> {
 
     val vec2d = Fractional.geometry.vector2D
 
@@ -37,11 +37,10 @@ class ActivityFlowImplementation(val grid: Grid<String>) : AStarPathFinder.Imple
     override fun neighbours(node: Step): List<Step> {
         return when (node) {
             is Start<*> -> {
-                val junctions = neighbourCells(node.terminator)
-
+                val cells = neighbourCells(node.terminator)
                 listOf()
             }
-            is Connection -> listOf()
+            is Connection<*> -> listOf()
 
             is End<*> -> listOf()
 
@@ -52,22 +51,41 @@ class ActivityFlowImplementation(val grid: Grid<String>) : AStarPathFinder.Imple
     private fun stepToPosition(step: Step): Vector2D<Fraction> {
         return when (step) {
             is Terminator<*> -> step.terminator.position
-            is Connection -> step.to.position
+            is Connection<*> -> step.to.position
         }
     }
 
-    private fun getCellOrCreateJunction(position: Vector2D<Fraction>): Cell? {
+    private fun getOrCreateCell(position: Vector2D<Fraction>): Cell<Item>? {
         return if (grid.isEmpty(position)) {
-            grid.addJunction(position)
+            grid.addCell(position)
         } else grid.getCell(position)
     }
 
-    private fun neighbourCells(cell: Cell): Map<Direction, Cell> {
+    private fun neighbourCells(cell: Cell<*>): Map<Direction, Cell<*>> {
         return neighbourOffsets.mapNotNull { ( direction, offset) ->
             val position = cell.position + offset
-            getCellOrCreateJunction(position)?.let {
+            getOrCreateCell(position)?.let {
                 direction to it
             }
         }.toMap()
+    }
+
+    private fun getFreeConnections(
+        direction: Direction,
+        from: Cell<Item>,
+        to: Cell<Item>,
+        indexLimits: Pair<Int, Int>,
+        previous: Step
+    ): List<Connection<Item>> {
+        val (indexFrom, indexTo) = indexLimits
+        return when (indexFrom) {
+            indexTo -> {
+                require(from.isFree(Cell.Port(direction, 0)) && to.isFree(Cell.Port(direction.opposite(), 0)))
+                listOf(Connection(from, to, 0, previous))
+            }
+            else -> {
+                listOf()
+            }
+        }
     }
 }
