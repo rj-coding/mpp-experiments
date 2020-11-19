@@ -6,6 +6,13 @@ import kotlin.test.assertEquals
 class FractionTests {
 
     @Test
+    fun simplifyTest() {
+        val f = frac(3, 9).simplify()
+        assertEquals(1, f.num)
+        assertEquals(3, f.den)
+    }
+
+    @Test
     fun equalsTest() {
         assertEquals(frac(2, 3), frac(6, 9))
         assertEquals(frac(17,11), frac(17 * 121, 11 * 121))

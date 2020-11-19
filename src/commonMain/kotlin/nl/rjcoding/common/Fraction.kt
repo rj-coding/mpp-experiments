@@ -3,7 +3,14 @@ package nl.rjcoding.common
 data class Fraction(val num: Int, val den: Int) {
     constructor(a: Int) : this(a, 1)
 
-    fun simplify() = Integral.gcd(num, den).let { Fraction(num / it, den / it) }.clean()
+    fun simplify() = Integral.gcd(num, den).let {
+        if (it != 0) {
+            Fraction(num / it, den / it)
+        } else {
+            this
+        }
+    }.clean()
+
     fun inverse() = Fraction(den, num).clean()
 
     operator fun plus(other: Fraction) = Fraction(num * other.den + other.num * den, den * other.den).clean()
@@ -13,19 +20,15 @@ data class Fraction(val num: Int, val den: Int) {
     operator fun div(other: Fraction) = times(other.inverse()).clean()
 
     operator fun compareTo(other: Fraction): Int {
-        val a = this.simplify()
-        val b = other.simplify()
+        val a = this * frac(other.den)
+        val b = other * frac(den)
         return a.num.compareTo(b.num)
     }
 
     override fun equals(other: Any?): Boolean {
         return when (other) {
             is Int -> equals(Fraction(other, 1))
-            is Fraction -> {
-                val a = this.simplify()
-                val b = other.simplify()
-                a.num == b.num && a.den == b.den
-            }
+            is Fraction -> compareTo(other) == 0
             else -> false
         }
     }

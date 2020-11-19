@@ -17,10 +17,11 @@ class Grid<Item>(val width: Fraction, val height: Fraction) {
         return occupiedCells[position]
     }
 
-    fun addCell(position: Vector2D<Fraction>): Cell<Item>? {
+    fun addCell(position: Vector2D<Fraction>, item: Item? = null): Cell<Item>? {
         if (withinBounds(position)) {
             return Cell<Item>(position).also {
                 occupiedCells[position] = it
+                it.item = item
             }
         }
         return null
@@ -41,15 +42,16 @@ class Grid<Item>(val width: Fraction, val height: Fraction) {
     }
 
     private fun freeOuterIndices(cellSequence: Sequence<Cell<Item>>, orientation: Orientation): Pair<Int, Int> {
+        val cells = cellSequence.toList()
         val directions = orientation.directions()
         val occupiedIndices = cellSequence
-            .filterIsInstance<Cell<Item>>()
-            .fold(setOf<Int>()) { occupied, hub ->
-                occupied.union(hub.occupiedIndices(directions.first).union(hub.occupiedIndices(directions.second)))
+            .fold(setOf<Int>()) { occupied, cell ->
+                val newOccupied = cell.occupiedIndices(directions.first) to cell.occupiedIndices(directions.second)
+                occupied.union(cell.occupiedIndices(directions.first).union(cell.occupiedIndices(directions.second)))
             }
 
-        val min = occupiedIndices.minOrNull() ?: 0
-        val max = occupiedIndices.maxOrNull() ?: 0
+        val min = occupiedIndices.minOrNull()?.minus(1) ?: 0
+        val max = occupiedIndices.maxOrNull()?.plus(1) ?: 0
 
         return min to max
     }

@@ -6,15 +6,15 @@ import nl.rjcoding.common.frac
 import nl.rjcoding.common.geometry
 import kotlin.test.*
 
-class HubTests {
+class CellTests {
 
     val vector2D = Fractional.geometry.vector2D
 
     @Test
     fun attachTest() {
-        val hub = Cell.Junction(vector2D.zero)
+        val hub = Cell<String>(vector2D.zero)
 
-        val port = Cell.Hub.Port(Direction.North, 0)
+        val port = Cell.Port(Direction.North, 0)
         assertTrue { hub.isFree(port) }
         hub.attach(port)
         assertFalse { hub.isFree(port) }
@@ -25,23 +25,23 @@ class HubTests {
     }
 
     @Test
-    fun connectTest() {
-        val hub = Cell.Junction(vector2D.zero)
-        val portA = Cell.Hub.Port(Direction.North, 0)
-        val portB = Cell.Hub.Port(Direction.South, 0)
+    fun linkTest() {
+        val hub = Cell<String>(vector2D.zero)
+        val portA = Cell.Port(Direction.North, 0)
+        val portB = Cell.Port(Direction.South, 0)
 
         assertFailsWith<IllegalArgumentException> {
-            hub.connect(portA, portB)
+            hub.link(portA, portB)
         }
         hub.attach(portA)
 
         assertFailsWith<IllegalArgumentException> {
-            hub.connect(portA, portB)
+            hub.link(portA, portB)
         }
 
         hub.attach(portB)
-        hub.connect(portA, portB)
-        assertEquals(1, hub.connections.size)
+        hub.link(portA, portB)
+        assertEquals(1, hub.links.size)
     }
 
 }

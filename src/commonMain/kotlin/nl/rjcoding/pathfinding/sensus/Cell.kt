@@ -13,11 +13,11 @@ class Cell<Item>(open val position: Vector2D<Fraction>) {
     private val portIndicesOccupied = mutableMapOf<Direction, MutableSet<Int>>()
     private val _links = mutableSetOf<Link>()
 
-    val links : Set<Link> get() = _links
-
     var item: Item? = null
 
     fun hasItem(): Boolean = item != null
+
+    val links : Set<Link> get() = _links
 
     fun attach(port: Port) {
         require(isFree(port))

@@ -48,7 +48,11 @@ object Integral : NumericalOps<Int> {
     override val unit: Int = 1
 
     tailrec fun gcd(a: Int, b: Int): Int {
-        if (b == 0) return a
+        if (a == b) return a
+        if (b == 0) {
+            if (a == 0) return 1
+            else return a
+        }
         else return gcd(b, a % b)
     }
 }
@@ -88,19 +92,19 @@ object Rational : NumericalOps<Double> {
 
 object Fractional : NumericalOps<Fraction> {
     override fun plus(left: Fraction, right: Fraction): Fraction {
-        return left + right
+        return (left + right).simplify()
     }
 
     override fun minus(left: Fraction, right: Fraction): Fraction {
-        return left - right
+        return (left - right).simplify()
     }
 
     override fun times(left: Fraction, right: Fraction): Fraction {
-        return left * right
+        return (left * right).simplify()
     }
 
     override fun div(left: Fraction, right: Fraction): Fraction {
-        return left / right
+        return (left / right).simplify()
     }
 
     override fun min(left: Fraction, right: Fraction): Fraction {
@@ -115,6 +119,6 @@ object Fractional : NumericalOps<Fraction> {
         return minus(left, right).num
     }
 
-    override val zero: Fraction = Fraction(0, 0)
+    override val zero: Fraction = Fraction(0, 1)
     override val unit: Fraction = Fraction(1, 1)
 }
