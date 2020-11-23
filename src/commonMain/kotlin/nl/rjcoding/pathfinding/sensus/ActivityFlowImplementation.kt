@@ -3,7 +3,7 @@ package nl.rjcoding.pathfinding.sensus
 import nl.rjcoding.common.*
 import nl.rjcoding.pathfinding.AStarPathFinder
 
-class ActivityFlowImplementation<Item>(val grid: Grid<Item>) : AStarPathFinder.Implementation<Step, Double> {
+class ActivityFlowImplementation<Item>(val grid: Grid<Item>) : AStarPathFinder.Implementation<Step<Item>, Double> {
 
     val vec2d = Fractional.geometry.vector2D
 
@@ -18,7 +18,7 @@ class ActivityFlowImplementation<Item>(val grid: Grid<Item>) : AStarPathFinder.I
         return l + r
     }
 
-    override fun cost(from: Step, to: Step): Double {
+    override fun cost(from: Step<Item>, to: Step<Item>): Double {
         val fromPosition = stepToPosition(from)
         val toPosition = stepToPosition(to)
         val dx = (toPosition.x - fromPosition.x)
@@ -26,7 +26,7 @@ class ActivityFlowImplementation<Item>(val grid: Grid<Item>) : AStarPathFinder.I
         return (dx * dx + dy * dy).toDouble()
     }
 
-    override fun heuristic(from: Step, to: Step): Double {
+    override fun heuristic(from: Step<Item>, to: Step<Item>): Double {
         return cost(from, to)
     }
 
@@ -34,12 +34,29 @@ class ActivityFlowImplementation<Item>(val grid: Grid<Item>) : AStarPathFinder.I
         return a.compareTo(b)
     }
 
-    override fun neighbours(node: Step): List<Step> {
+    @Suppress("UNCHECKED_CAST")
+    override fun neighbours(node: Step<Item>): List<Step<Item>> {
         return when (node) {
-            is Start<*> -> {
-                val cells = neighbourCells(node.terminator)
-                listOf()
+            is Start -> {
+                val freeRowIndexLimits = grid.freeOuterRowIndices(node.terminator.position.x)
+                val freeColIndexLimits = grid.freeOuterColumnIndices(node.terminator.position.y)
+                val neighbours = neighbourCells(node.terminator)
+                neighbours.flatMap { (direction, neighbour) ->
+                    val indexLimits = when (direction.orientation()) {
+                        Orientation.Horizontal -> freeRowIndexLimits
+                        Orientation.Vertical -> freeColIndexLimits
+                    }
+
+                    getFreeConnections(
+                        direction,
+                        node.terminator,
+                        neighbour,
+                        indexLimits,
+                        node
+                    )
+                }
             }
+
             is Connection<*> -> listOf()
 
             is End<*> -> listOf()
@@ -48,10 +65,10 @@ class ActivityFlowImplementation<Item>(val grid: Grid<Item>) : AStarPathFinder.I
         }
     }
 
-    private fun stepToPosition(step: Step): Vector2D<Fraction> {
+    private fun stepToPosition(step: Step<Item>): Vector2D<Fraction> {
         return when (step) {
-            is Terminator<*> -> step.terminator.position
-            is Connection<*> -> step.to.position
+            is Terminator -> step.terminator.position
+            is Connection -> step.to.position
         }
     }
 
@@ -61,7 +78,7 @@ class ActivityFlowImplementation<Item>(val grid: Grid<Item>) : AStarPathFinder.I
         } else grid.getCell(position)
     }
 
-    private fun neighbourCells(cell: Cell<*>): Map<Direction, Cell<*>> {
+    private fun neighbourCells(cell: Cell<Item>): Map<Direction, Cell<Item>> {
         return neighbourOffsets.mapNotNull { ( direction, offset) ->
             val position = cell.position + offset
             getOrCreateCell(position)?.let {
@@ -75,16 +92,19 @@ class ActivityFlowImplementation<Item>(val grid: Grid<Item>) : AStarPathFinder.I
         from: Cell<Item>,
         to: Cell<Item>,
         indexLimits: Pair<Int, Int>,
-        previous: Step
+        previous: Step<Item>
     ): List<Connection<Item>> {
         val (indexFrom, indexTo) = indexLimits
         return when (indexFrom) {
             indexTo -> {
-                require(from.isFree(Cell.Port(direction, 0)) && to.isFree(Cell.Port(direction.opposite(), 0)))
-                listOf(Connection(from, to, 0, previous))
+                if (from.isFree(Cell.Port(direction, indexFrom)) && to.isFree(Cell.Port(direction.opposite(), indexFrom))) {
+                    listOf(Connection(from, to, indexFrom, previous))
+                } else {
+                    listOf()
+                }
             }
-            else -> {
-                listOf()
+            else -> (indexFrom .. indexTo).flatMap { index ->
+                getFreeConnections(direction, from, to, index to index, previous)
             }
         }
     }

@@ -37,16 +37,14 @@ class Grid<Item>(val width: Fraction, val height: Fraction) {
         return freeOuterIndices(rowCells(row), Orientation.Horizontal)
     }
 
-    fun freeOuterColumnIndices(row: Fraction): Pair<Int, Int> {
-        return freeOuterIndices(columnCells(row), Orientation.Vertical)
+    fun freeOuterColumnIndices(col: Fraction): Pair<Int, Int> {
+        return freeOuterIndices(columnCells(col), Orientation.Vertical)
     }
 
     private fun freeOuterIndices(cellSequence: Sequence<Cell<Item>>, orientation: Orientation): Pair<Int, Int> {
-        val cells = cellSequence.toList()
         val directions = orientation.directions()
         val occupiedIndices = cellSequence
             .fold(setOf<Int>()) { occupied, cell ->
-                val newOccupied = cell.occupiedIndices(directions.first) to cell.occupiedIndices(directions.second)
                 occupied.union(cell.occupiedIndices(directions.first).union(cell.occupiedIndices(directions.second)))
             }
 

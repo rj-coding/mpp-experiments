@@ -2,9 +2,9 @@ package nl.rjcoding.pathfinding.sensus
 
 import nl.rjcoding.pathfinding.HasPrevious
 
-sealed class Step(override val previous: Step?) : HasPrevious<Step>
+sealed class Step<Item>(override val previous: Step<Item>?) : HasPrevious<Step<Item>>
 
-abstract class Terminator<Item>(val terminator: Cell<Item>, previous: Step?) : Step(previous) {
+abstract class Terminator<Item>(val terminator: Cell<Item>, previous: Step<Item>?) : Step<Item>(previous) {
     override fun hashCode(): Int {
         return terminator.position.hashCode()
     }
@@ -18,9 +18,9 @@ abstract class Terminator<Item>(val terminator: Cell<Item>, previous: Step?) : S
 
 class Start<Item>(terminator: Cell<Item>) : Terminator<Item>(terminator, null)
 
-class End<Item>(terminator: Cell<Item>, previous: Step) : Terminator<Item>(terminator, previous)
+class End<Item>(terminator: Cell<Item>, previous: Step<Item>) : Terminator<Item>(terminator, previous)
 
-class Connection<Item>(val from: Cell<Item>, val to: Cell<Item>, val index: Int, previous: Step) : Step(previous) {
+class Connection<Item>(val from: Cell<Item>, val to: Cell<Item>, val index: Int, previous: Step<Item>) : Step<Item>(previous) {
 
     override fun hashCode(): Int {
         return (from.position to to.position).hashCode()

@@ -40,6 +40,12 @@ data class Fraction(val num: Int, val den: Int) {
 
     fun toDouble(): Double = num.toDouble() / den.toDouble()
 
+    override fun toString(): String = when (num) {
+        0 -> "0"
+        den -> num.toString()
+        else -> "${num}/${den}"
+    }
+
     private fun clean(): Fraction {
         return when {
             num < 0 && den < 0 -> Fraction(-num, -den)

@@ -68,7 +68,7 @@ class Grid(val width: Int, val height: Int) : AStarPathFinder.Implementation<Nod
     }
 }
 
-class AStarPathFinderTest {
+class AStarPathFinderTests {
 
     @Test
     fun oneStepTest() {
