@@ -2,6 +2,7 @@ package nl.rjcoding.orgchart
 
 import nl.rjcoding.common.UUID
 import nl.rjcoding.ecs.SimpleECS
+import nl.rjcoding.ecs.get
 import nl.rjcoding.ecs.hasEquals
 import nl.rjcoding.ecs.into
 import kotlin.test.Test
@@ -24,9 +25,9 @@ class OrgChartModuleTests {
         assertTrue { bar in ecs }
         assertTrue { baz in ecs }
 
-        assertEquals("Foo", ecs[foo, TypeTag.Name].into<OrgChartComponent.Name>()?.name)
-        assertEquals("Bar", ecs[bar, TypeTag.Name].into<OrgChartComponent.Name>()?.name)
-        assertEquals("Baz", ecs[baz, TypeTag.Name].into<OrgChartComponent.Name>()?.name)
+        assertEquals("Foo", ecs[foo].getName())
+        assertEquals("Bar", ecs[bar].getName())
+        assertEquals("Baz", ecs[baz].getName())
 
         assertEquals(foo, ecs[bar, TypeTag.Parent].into<OrgChartComponent.Parent<UUID>>()?.id)
         assertEquals(foo, ecs[baz, TypeTag.Parent].into<OrgChartComponent.Parent<UUID>>()?.id)
