@@ -1,37 +1,39 @@
 package nl.rjcoding.ecs2
 
 import nl.rjcoding.common.Generator
-import nl.rjcoding.common.UUID
 
-interface TypeData<Tag, Item> {
-    val tag: Tag
+fun interface TypeFetcher<Item> {
+    fun fetch(item: Any): Item?
+}
 
+interface TypeTag<Item> {
     @Suppress("UNCHECKED_CAST")
-    fun transform(item: Any): Item? = item as? Item
+    fun typeFetcher(): TypeFetcher<Item> = TypeFetcher { item -> item as? Item }
 }
 
-interface HasTypeData<Tag, Item> {
-    val typeData: TypeData<Tag, Item>
+interface HasTypeTag<Item> {
+    val tag: TypeTag<Item>
 }
 
-interface ECS<Id, Tag> {
+interface ECS<Id> {
     fun create(): Id?
-    fun <Item : HasTypeData<Tag, Item>> set(id: Id, item: Item)
-    fun <Item> get(id: Id, typeData: TypeData<Tag, Item>): Item?
+    fun <Item : HasTypeTag<Item>> set(id: Id, item: Item)
+    fun <Item> get(id: Id, tag: TypeTag<Item>): Item?
 }
 
-class HashMapECS<Id, Tag>(private val idGenerator: Generator<Id>) : ECS<Id, Tag> {
-    private val data = mutableMapOf<Id, MutableMap<Tag, Any>>()
+class HashMapECS<Id>(private val idGenerator: Generator<Id>) : ECS<Id> {
+
+    private val data = mutableMapOf<Id, MutableMap<TypeTag<*>, Any>>()
 
     override fun create(): Id? = idGenerator.generate()
 
-    override fun <Item : HasTypeData<Tag, Item>> set(id: Id, item: Item) {
-        data.getOrPut(id) { mutableMapOf() }[item.typeData.tag] = item
+    override fun <Item : HasTypeTag<Item>> set(id: Id, item: Item) {
+        data.getOrPut(id) { mutableMapOf() }[item.tag] = item
     }
 
-    override fun <Item> get(id: Id, typeData: TypeData<Tag, Item>): Item? {
-        val raw = data[id]?.get(typeData.tag)
+    override fun <Item> get(id: Id, tag: TypeTag<Item>): Item? {
+        val raw = data[id]?.get(tag)
         if (raw == null) return raw
-        return typeData.transform(raw)
+        return tag.typeFetcher().fetch(raw)
     }
 }
