@@ -31,16 +31,20 @@ class ActivityFlowImplementation<Item>(val grid: Grid<Item>) : AStarPathFinder.I
     }
 
     override fun compare(a: Double, b: Double): Int {
-        return a.compareTo(b)
+        return b.compareTo(a)
     }
 
     @Suppress("UNCHECKED_CAST")
     override fun neighbours(node: Step<Item>): List<Step<Item>> {
+        val cell = stepToCell(node)
+        val freeRowIndexLimits = grid.freeOuterRowIndices(stepToPosition(node).x)
+        val freeColIndexLimits = grid.freeOuterColumnIndices(stepToPosition(node).y)
+        val neighbours = neighbourCells(cell).let {
+            if (node is Connection) it.filterNot { neighbour -> neighbour == node.from } else it
+        }
+
         return when (node) {
-            is Start -> {
-                val freeRowIndexLimits = grid.freeOuterRowIndices(node.terminator.position.x)
-                val freeColIndexLimits = grid.freeOuterColumnIndices(node.terminator.position.y)
-                val neighbours = neighbourCells(node.terminator)
+            is Start, is Connection<*> -> {
                 neighbours.flatMap { (direction, neighbour) ->
                     val indexLimits = when (direction.orientation()) {
                         Orientation.Horizontal -> freeRowIndexLimits
@@ -49,7 +53,7 @@ class ActivityFlowImplementation<Item>(val grid: Grid<Item>) : AStarPathFinder.I
 
                     getFreeConnections(
                         direction,
-                        node.terminator,
+                        cell,
                         neighbour,
                         indexLimits,
                         node
@@ -57,19 +61,19 @@ class ActivityFlowImplementation<Item>(val grid: Grid<Item>) : AStarPathFinder.I
                 }
             }
 
-            is Connection<*> -> listOf()
+            else -> listOf()
+        }
+    }
 
-            is End<*> -> listOf()
-
-            else -> listOf() // this should not be reached
+    private fun stepToCell(step: Step<Item>): Cell<Item> {
+        return when (step) {
+            is Terminator -> step.terminator
+            is Connection -> step.to
         }
     }
 
     private fun stepToPosition(step: Step<Item>): Vector2D<Fraction> {
-        return when (step) {
-            is Terminator -> step.terminator.position
-            is Connection -> step.to.position
-        }
+        return stepToCell(step).position
     }
 
     private fun getOrCreateCell(position: Vector2D<Fraction>): Cell<Item>? {
@@ -93,12 +97,13 @@ class ActivityFlowImplementation<Item>(val grid: Grid<Item>) : AStarPathFinder.I
         to: Cell<Item>,
         indexLimits: Pair<Int, Int>,
         previous: Step<Item>
-    ): List<Connection<Item>> {
+    ): List<Step<Item>> {
         val (indexFrom, indexTo) = indexLimits
         return when (indexFrom) {
             indexTo -> {
                 if (from.isFree(Cell.Port(direction, indexFrom)) && to.isFree(Cell.Port(direction.opposite(), indexFrom))) {
-                    listOf(Connection(from, to, indexFrom, previous))
+                    val step = if (to.hasItem()) End(to, previous) else Connection(from, to, indexFrom, previous)
+                    listOf(step)
                 } else {
                     listOf()
                 }

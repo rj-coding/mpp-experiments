@@ -20,6 +20,8 @@ class Start<Item>(terminator: Cell<Item>) : Terminator<Item>(terminator, null)
 
 class End<Item>(terminator: Cell<Item>, previous: Step<Item>) : Terminator<Item>(terminator, previous)
 
+class Target<Item>(terminator: Cell<Item>) : Terminator<Item>(terminator, null)
+
 class Connection<Item>(val from: Cell<Item>, val to: Cell<Item>, val index: Int, previous: Step<Item>) : Step<Item>(previous) {
 
     override fun hashCode(): Int {
