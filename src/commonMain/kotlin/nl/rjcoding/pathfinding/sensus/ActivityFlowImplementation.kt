@@ -37,8 +37,8 @@ class ActivityFlowImplementation<Item>(val grid: Grid<Item>) : AStarPathFinder.I
     @Suppress("UNCHECKED_CAST")
     override fun neighbours(node: Step<Item>): List<Step<Item>> {
         val cell = stepToCell(node)
-        val freeRowIndexLimits = grid.freeOuterRowIndices(stepToPosition(node).x)
-        val freeColIndexLimits = grid.freeOuterColumnIndices(stepToPosition(node).y)
+        val freeRowIndexLimits = grid.freeOuterRowIndices(stepToPosition(node).y)
+        val freeColIndexLimits = grid.freeOuterColumnIndices(stepToPosition(node).x)
         val neighbours = neighbourCells(cell).let {
             if (node is Connection) it.filterNot { neighbour -> neighbour == node.from } else it
         }

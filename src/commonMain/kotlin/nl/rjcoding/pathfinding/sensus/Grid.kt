@@ -27,6 +27,24 @@ class Grid<Item>(val width: Fraction, val height: Fraction) {
         return null
     }
 
+    fun placePath(path: List<Step<Item>>) {
+        var last : Connection<Item>? = null
+        var lastDirection: Direction? = null
+        path.filterIsInstance<Connection<Item>>().forEach { step ->
+            val direction = step.from.directionTo(step.to)!!
+            step.from.attach(Cell.Port(direction, step.index))
+            step.to.attach(Cell.Port(direction.opposite(), step.index))
+            if (last != null) {
+                step.from.link(
+                    from = Cell.Port(lastDirection!!.opposite(), last!!.index),
+                    to = Cell.Port(direction, step.index)
+                )
+            }
+            last = step
+            lastDirection = direction
+        }
+    }
+
     fun clearCell(position: Vector2D<Fraction>) {
         if (withinBounds(position)) {
             occupiedCells.remove(position)
@@ -43,7 +61,8 @@ class Grid<Item>(val width: Fraction, val height: Fraction) {
 
     private fun freeOuterIndices(cellSequence: Sequence<Cell<Item>>, orientation: Orientation): Pair<Int, Int> {
         val directions = orientation.directions()
-        val occupiedIndices = cellSequence
+        val cells = cellSequence.toList()
+        val occupiedIndices = cells
             .fold(setOf<Int>()) { occupied, cell ->
                 occupied.union(cell.occupiedIndices(directions.first).union(cell.occupiedIndices(directions.second)))
             }

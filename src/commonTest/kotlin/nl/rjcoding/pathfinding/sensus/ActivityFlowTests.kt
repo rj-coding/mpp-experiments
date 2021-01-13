@@ -27,6 +27,21 @@ class ActivityFlowTests {
     }
 
     @Test
+    fun horizontalTriple() {
+        val grid = Grid<String>(frac(3), frac(1))
+        val impl = ActivityFlowImplementation(grid)
+        val pathfinder = AStarPathFinder(impl)
+
+
+        val start = Start(grid.addCell(vec(frac(0), frac(0)), "Start")!!)
+        val end = End(grid.addCell(vec(frac(2), frac(0)), "End")!!)
+        grid.placePath(pathfinder.find(start, end))
+        grid.placePath(pathfinder.find(start, end))
+        val result = pathfinder.find(start, end)
+        println()
+    }
+
+    @Test
     fun verticalSimple() {
         val grid = Grid<String>(frac(1), frac(3))
         val impl = ActivityFlowImplementation(grid)
