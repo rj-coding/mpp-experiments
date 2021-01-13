@@ -31,7 +31,7 @@ class ActivityFlowImplementation<Item>(val grid: Grid<Item>) : AStarPathFinder.I
     }
 
     override fun compare(a: Double, b: Double): Int {
-        return b.compareTo(a)
+        return a.compareTo(b)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -41,6 +41,10 @@ class ActivityFlowImplementation<Item>(val grid: Grid<Item>) : AStarPathFinder.I
         val freeColIndexLimits = grid.freeOuterColumnIndices(stepToPosition(node).y)
         val neighbours = neighbourCells(cell).let {
             if (node is Connection) it.filterNot { neighbour -> neighbour == node.from } else it
+        }
+
+        if (node is Connection<*> && (node.to as Cell<Item>).hasItem()) {
+            return listOf(End(node.to, node as Connection<Item>))
         }
 
         return when (node) {
@@ -102,8 +106,8 @@ class ActivityFlowImplementation<Item>(val grid: Grid<Item>) : AStarPathFinder.I
         return when (indexFrom) {
             indexTo -> {
                 if (from.isFree(Cell.Port(direction, indexFrom)) && to.isFree(Cell.Port(direction.opposite(), indexFrom))) {
-                    val step = if (to.hasItem()) End(to, previous) else Connection(from, to, indexFrom, previous)
-                    listOf(step)
+                    //val step = if (to.hasItem()) End(to, previous) else Connection(from, to, indexFrom, previous)
+                    listOf(Connection(from, to, indexFrom, previous))
                 } else {
                     listOf()
                 }

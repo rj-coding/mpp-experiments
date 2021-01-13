@@ -18,9 +18,7 @@ abstract class Terminator<Item>(val terminator: Cell<Item>, previous: Step<Item>
 
 class Start<Item>(terminator: Cell<Item>) : Terminator<Item>(terminator, null)
 
-class End<Item>(terminator: Cell<Item>, previous: Step<Item>) : Terminator<Item>(terminator, previous)
-
-class Target<Item>(terminator: Cell<Item>) : Terminator<Item>(terminator, null)
+class End<Item>(terminator: Cell<Item>, previous: Step<Item>? = null) : Terminator<Item>(terminator, previous)
 
 class Connection<Item>(val from: Cell<Item>, val to: Cell<Item>, val index: Int, previous: Step<Item>) : Step<Item>(previous) {
 

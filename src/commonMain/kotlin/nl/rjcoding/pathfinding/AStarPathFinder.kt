@@ -19,7 +19,11 @@ class AStarPathFinder<Node, Cost> (
     }
 
     override fun findStepWise(from: Node, to: Node): Sequence<Node?> = sequence {
-        val frontier = BinaryHeap<Node, Cost>(nodeImpl)
+        val minComparator = Comparator<Cost> { a, b ->
+            nodeImpl.compare(b, a)
+        }
+
+        val frontier = BinaryHeap<Node, Cost>(minComparator)
         val closedSet = mutableSetOf<Node>()
         val costs = mutableMapOf<Node, Cost>()
 

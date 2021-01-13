@@ -5,6 +5,7 @@ import nl.rjcoding.common.frac
 import nl.rjcoding.common.geometry
 import nl.rjcoding.pathfinding.AStarPathFinder
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ActivityFlowTests {
 
@@ -16,11 +17,13 @@ class ActivityFlowTests {
         val impl = ActivityFlowImplementation(grid)
 
         val start = Start(grid.addCell(vec(frac(0), frac(0)), "Start")!!)
-        val end = Target(grid.addCell(vec(frac(2), frac(0)), "End")!!)
+        val end = End(grid.addCell(vec(frac(2), frac(0)), "End")!!)
 
         val pathfinder = AStarPathFinder(impl)
         val result = pathfinder.find(start, end)
-        println()
+        assertEquals(6, result.size)
+        assertEquals(vec(frac(0), frac(0)), (result[0] as Start).terminator.position)
+        assertEquals(vec(frac(2), frac(0)), (result[5] as End).terminator.position)
     }
 
     @Test
@@ -29,11 +32,13 @@ class ActivityFlowTests {
         val impl = ActivityFlowImplementation(grid)
 
         val start = Start(grid.addCell(vec(frac(0), frac(0)), "Start")!!)
-        val end = Target(grid.addCell(vec(frac(0), frac(2)), "End")!!)
+        val end = End(grid.addCell(vec(frac(0), frac(2)), "End")!!)
 
         val pathfinder = AStarPathFinder(impl)
         val result = pathfinder.find(start, end)
-        println()
+        assertEquals(6, result.size)
+        assertEquals(vec(frac(0), frac(0)), (result[0] as Start).terminator.position)
+        assertEquals(vec(frac(0), frac(2)), (result[5] as End).terminator.position)
     }
 
 }
